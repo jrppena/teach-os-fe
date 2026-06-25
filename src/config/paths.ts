@@ -28,5 +28,10 @@ export const paths = {
         path: '', // index route under /app
         getHref: () => '/app',
       },
+      // Lesson-plan generator wizard — primary post-auth landing page.
+      generate: {
+        path: '/generate',
+        getHref: () => '/generate',
+      },
     },
   } as const;

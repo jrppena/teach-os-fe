@@ -72,7 +72,7 @@ export function RegisterForm() {
         { firstName, lastName, email, password },
         {
           onSuccess: () =>
-            navigate(redirectTo || paths.app.root.getHref(), { replace: true }),
+            navigate(redirectTo || paths.app.generate.getHref(), { replace: true }),
         },
       )
     }

@@ -88,7 +88,7 @@ export default function AuthPage() {
     navigate(`${target}${search}`, { replace: true })
   }
 
-  const goToApp = () => navigate(redirectTo || paths.app.root.getHref(), { replace: true })
+  const goToApp = () => navigate(redirectTo || paths.app.generate.getHref(), { replace: true })
 
   // ── Google login (sign-in tab) ───────────────────────────────────────────
   const googleLogin = useGoogleLogin()

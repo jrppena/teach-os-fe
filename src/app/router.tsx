@@ -72,6 +72,22 @@ export const createAppRouter = (queryClient: QueryClient) =>
       ],
     },
     {
+      path: paths.app.generate.path,
+      element: (
+        <ProtectedRoute>
+          <Outlet />
+        </ProtectedRoute>
+      ),
+      ErrorBoundary: AppRootErrorBoundary,
+      children: [
+        {
+          index: true,
+          lazy: () =>
+            import('./routes/app/generate').then(convert(queryClient)),
+        },
+      ],
+    },
+    {
       path: '*',
       lazy: () => import('./routes/not-found').then(convert(queryClient)),
     },
