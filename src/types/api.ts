@@ -1,6 +1,6 @@
 export type BaseEntity = {
     id: string;
-    createdAt: number;
+    createdAt: string; // ISO-8601 timestamp from the backend
   };
   
   export type Entity<T> = {
@@ -18,7 +18,6 @@ export type BaseEntity = {
     lastName: string;
     email: string;
     role: 'ADMIN' | 'USER';
-    teamId: string;
     bio: string;
   }>;
   

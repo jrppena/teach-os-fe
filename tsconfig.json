@@ -16,6 +16,7 @@
     "jsx": "react-jsx",
     "types": ["vite/client", "vitest/globals"],
     "isolatedModules": true,
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]

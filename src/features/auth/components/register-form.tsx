@@ -1,69 +1,106 @@
+/* -------------------------------------------------------------------------- */
+/*  Register form                                                                */
+/*                                                                              */
+/*  Collects first/last name, email and password, then calls `useRegister`      */
+/*  (Firebase account creation -> backend user row). On success, redirects to    */
+/*  the protected app. No team concept.                                          */
+/* -------------------------------------------------------------------------- */
+
 import { useState } from "react"
+import { useNavigate, useSearchParams } from "react-router"
 import { validateEmail, validatePassword, validateRequired } from "@/utils/validators"
 import { Label } from "@/components/ui/label/label"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
 import { EyeOff, Eye } from "lucide-react"
 import { FormField } from "@/components/ui/form-field"
-
-/* -------------------------------------------------------------------------- */
-/*  Register form                                                               */
-/* -------------------------------------------------------------------------- */
+import { useRegister } from "@/lib/auth"
+import { paths } from "@/config/paths"
 
 export function RegisterForm() {
-    const [fullName, setFullName] = useState("")
+    const [firstName, setFirstName] = useState("")
+    const [lastName, setLastName] = useState("")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirm, setShowConfirm] = useState(false)
     const [errors, setErrors] = useState<Record<string, string>>({})
-    const [loading, setLoading] = useState(false)
     const [touched, setTouched] = useState<Record<string, boolean>>({})
-  
+
+    const register = useRegister()
+    const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+    const redirectTo = searchParams.get("redirectTo")
+
     const validators: Record<string, (v: string) => string> = {
-      fullName: validateRequired("Full name"),
+      firstName: validateRequired("First name"),
+      lastName: validateRequired("Last name"),
       email: validateEmail,
       password: validatePassword,
-      confirmPassword: (v) => v === password ? "" : "Passwords do not match.",
+      confirmPassword: (v) => (v === password ? "" : "Passwords do not match."),
     }
-  
+
     const handleBlur = (field: string, value: string) => {
       setTouched((t) => ({ ...t, [field]: true }))
       setErrors((e) => ({ ...e, [field]: validators[field](value) }))
     }
-  
+
     const validate = () => {
       const e: Record<string, string> = {}
-      Object.entries({ fullName, email, password, confirmPassword }).forEach(([k, v]) => {
-        const err = validators[k](v)
-        if (err) e[k] = err
-      })
+      Object.entries({ firstName, lastName, email, password, confirmPassword }).forEach(
+        ([k, v]) => {
+          const err = validators[k](v)
+          if (err) e[k] = err
+        },
+      )
       setErrors(e)
       return Object.keys(e).length === 0
     }
-  
-    const handleSubmit = async (ev: React.FormEvent) => {
+
+    const handleSubmit = (ev: React.FormEvent) => {
       ev.preventDefault()
-      setTouched({ fullName: true, email: true, password: true, confirmPassword: true })
+      setTouched({
+        firstName: true,
+        lastName: true,
+        email: true,
+        password: true,
+        confirmPassword: true,
+      })
       if (!validate()) return
-      setLoading(true)
-      await new Promise((r) => setTimeout(r, 1800))
-      setLoading(false)
+      register.mutate(
+        { firstName, lastName, email, password },
+        {
+          onSuccess: () =>
+            navigate(redirectTo || paths.app.root.getHref(), { replace: true }),
+        },
+      )
     }
-  
+
     return (
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-        <FormField
-          id="reg-name"
-          label="Full Name"
-          value={fullName}
-          error={touched.fullName ? errors.fullName : undefined}
-          placeholder="Maria Santos"
-          autoComplete="name"
-          onChange={setFullName}
-          onBlur={() => handleBlur("fullName", fullName)}
-        />
+        <div className="grid grid-cols-2 gap-3">
+          <FormField
+            id="reg-first-name"
+            label="First Name"
+            value={firstName}
+            error={touched.firstName ? errors.firstName : undefined}
+            placeholder="Maria"
+            autoComplete="given-name"
+            onChange={setFirstName}
+            onBlur={() => handleBlur("firstName", firstName)}
+          />
+          <FormField
+            id="reg-last-name"
+            label="Last Name"
+            value={lastName}
+            error={touched.lastName ? errors.lastName : undefined}
+            placeholder="Santos"
+            autoComplete="family-name"
+            onChange={setLastName}
+            onBlur={() => handleBlur("lastName", lastName)}
+          />
+        </div>
         <FormField
           id="reg-email"
           label="Email"
@@ -75,7 +112,7 @@ export function RegisterForm() {
           onChange={setEmail}
           onBlur={() => handleBlur("email", email)}
         />
-  
+
         {/* Role — always Teacher, not selectable */}
         <div className="flex flex-col gap-1.5">
           <Label className="text-sm font-medium text-foreground">Role</Label>
@@ -84,7 +121,7 @@ export function RegisterForm() {
             <span className="ml-auto text-xs opacity-60">Provisioned by admin</span>
           </div>
         </div>
-  
+
         <FormField
           id="reg-password"
           label="Password"
@@ -127,10 +164,16 @@ export function RegisterForm() {
             </button>
           }
         />
-  
-        <Button type="submit" className="w-full mt-1" disabled={loading}>
-          {loading && <Loader2 data-icon="inline-start" className="animate-spin" />}
-          {loading ? "Creating account…" : "Create Account"}
+
+        {register.isError && (
+          <p role="alert" className="text-sm text-destructive">
+            {(register.error as Error)?.message ?? "Unable to create account. Please try again."}
+          </p>
+        )}
+
+        <Button type="submit" className="w-full mt-1" disabled={register.isPending}>
+          {register.isPending && <Loader2 data-icon="inline-start" className="animate-spin" />}
+          {register.isPending ? "Creating account…" : "Create Account"}
         </Button>
       </form>
     )

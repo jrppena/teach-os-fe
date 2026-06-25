@@ -1,6 +1,6 @@
 import { Label } from "../label/label";
 import { Input } from "../input/input";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/utils";
 
 
 /* -------------------------------------------------------------------------- */

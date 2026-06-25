@@ -17,30 +17,16 @@ export const paths = {
       },
     },
   
-    // app: {
-    //   root: {
-    //     path: '/app',
-    //     getHref: () => '/app',
-    //   },
-    //   dashboard: {
-    //     path: '',
-    //     getHref: () => '/app',
-    //   },
-    //   discussions: {
-    //     path: 'discussions',
-    //     getHref: () => '/app/discussions',
-    //   },
-    //   discussion: {
-    //     path: 'discussions/:discussionId',
-    //     getHref: (id: string) => `/app/discussions/${id}`,
-    //   },
-    //   users: {
-    //     path: 'users',
-    //     getHref: () => '/app/users',
-    //   },
-    //   profile: {
-    //     path: 'profile',
-    //     getHref: () => '/app/profile',
-    //   },
-    // },
+    // Authenticated app area. Minimal for now — root layout + dashboard index.
+    // Add discussions/users/profile here as those features are built.
+    app: {
+      root: {
+        path: '/app',
+        getHref: () => '/app',
+      },
+      dashboard: {
+        path: '', // index route under /app
+        getHref: () => '/app',
+      },
+    },
   } as const;

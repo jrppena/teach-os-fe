@@ -8,10 +8,10 @@ import {
   signOut,
   updateProfile,
   onAuthStateChanged,
-  User as FirebaseUser,
+  type User as FirebaseUser,
 } from 'firebase/auth';
 import { paths } from '@/config/paths';
-import { User } from '../types/api';
+import type { User } from '../types/api';
 import { auth } from '@/lib/firebase-client';
 import { api } from '@/lib/api-client';
 
@@ -25,42 +25,30 @@ export const loginInputSchema = z.object({
 });
 export type LoginInput = z.infer<typeof loginInputSchema>;
 
-export const registerInputSchema = z
-  .object({
-    email: z.string().min(1, 'Required'),
-    firstName: z.string().min(1, 'Required'),
-    lastName: z.string().min(1, 'Required'),
-    password: z.string().min(5, 'Required'),
-  })
-  .and(
-    z
-      .object({
-        teamId: z.string().min(1, 'Required'),
-        teamName: z.null().default(null),
-      })
-      .or(
-        z.object({
-          teamName: z.string().min(1, 'Required'),
-          teamId: z.null().default(null),
-        }),
-      ),
-  );
+export const registerInputSchema = z.object({
+  email: z.string().min(1, 'Required').email('Invalid email'),
+  firstName: z.string().min(1, 'Required'),
+  lastName: z.string().min(1, 'Required'),
+  password: z.string().min(5, 'Required'),
+});
 export type RegisterInput = z.infer<typeof registerInputSchema>;
 
 // ============================================================================
 // HELPERS
 // ============================================================================
 
+// Note: the api-client response interceptor already unwraps `response.data`, so
+// these calls resolve to the parsed body directly — do NOT read `.data` again.
+// Axios's static types still describe an AxiosResponse, hence the casts.
 const getUserFromAPI = async (firebaseUID: string): Promise<User> => {
-  const response = await api.get(`/auth/user/${firebaseUID}`);
-  return response.data;
+  return (await api.get(`/auth/user/${firebaseUID}`)) as unknown as User;
 };
 
-const mapFirebaseUserToAuthHeader = (fbUser: FirebaseUser): void => {
-  // Get Firebase ID token and attach to API headers for subsequent requests
-  fbUser.getIdToken().then((token) => {
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  });
+// Attach the Firebase ID token as a Bearer header. Awaited (not fire-and-forget)
+// so the token is present before any backend call that depends on it.
+const attachAuthHeader = async (fbUser: FirebaseUser): Promise<void> => {
+  const token = await fbUser.getIdToken();
+  api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 };
 
 // ============================================================================
@@ -78,7 +66,7 @@ const getUser = async (): Promise<User | null> => {
       }
 
       try {
-        mapFirebaseUserToAuthHeader(fbUser);
+        await attachAuthHeader(fbUser);
         const user = await getUserFromAPI(fbUser.uid);
         resolve(user);
       } catch (error) {
@@ -92,10 +80,10 @@ const getUser = async (): Promise<User | null> => {
 const loginWithEmailAndPassword = async (data: LoginInput): Promise<User> => {
   try {
     const credential = await signInWithEmailAndPassword(auth, data.email, data.password);
-    mapFirebaseUserToAuthHeader(credential.user);
+    await attachAuthHeader(credential.user);
     return await getUserFromAPI(credential.user.uid);
   } catch (error) {
-    throw new Error(getFirebaseErrorMessage(error));
+    throw new Error(getFirebaseErrorMessage(error), { cause: error });
   }
 };
 
@@ -112,24 +100,23 @@ const registerWithEmailAndPassword = async (data: RegisterInput): Promise<User> 
       displayName: `${data.firstName} ${data.lastName}`,
     });
 
-    // Attach token to API for the next request
-    mapFirebaseUserToAuthHeader(credential.user);
+    // Attach token before the backend call (must be awaited)
+    await attachAuthHeader(credential.user);
 
-    // Create user record in PostgreSQL via API
-    const response = await api.post('/auth/register', {
+    // Create user record in PostgreSQL via API. The interceptor unwraps the body,
+    // so this resolves to the created User directly.
+    const user = (await api.post('/auth/register', {
       firebaseUID: credential.user.uid,
       email: credential.user.email,
       firstName: data.firstName,
       lastName: data.lastName,
-      teamId: data.teamId || null,
-      teamName: data.teamName || null,
       role: 'USER',
       bio: '',
-    });
+    })) as unknown as User;
 
-    return response.data; // Returns the User object from DB
+    return user;
   } catch (error) {
-    throw new Error(getFirebaseErrorMessage(error));
+    throw new Error(getFirebaseErrorMessage(error), { cause: error });
   }
 };
 

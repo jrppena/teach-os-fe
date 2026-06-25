@@ -2,7 +2,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X, BookOpen } from "lucide-react"
-import { cn } from "@/utils/cn"
+import { cn } from "@/lib/utils"
 import { useNavigate } from "react-router-dom"
 
 const navLinks = [
