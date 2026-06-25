@@ -6,43 +6,14 @@
  * is enforced by <ProtectedRoute> in the router; this component assumes a user.
  */
 
-import { Outlet, useNavigate } from "react-router"
+import { Outlet } from "react-router"
 
-import { Button } from "@/components/ui/button"
-import { paths } from "@/config/paths"
-import { useLogout, useUser } from "@/lib/auth"
+import { DashboardNav } from "@/components/layouts/dashboard-nav"
 
 export default function AppRoot() {
-  const user = useUser()
-  const logout = useLogout()
-  const navigate = useNavigate()
-
-  const handleLogout = () => {
-    logout.mutate(undefined, {
-      onSuccess: () => navigate(paths.auth.login.getHref(), { replace: true }),
-    })
-  }
-
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <header className="flex items-center justify-between border-b border-border px-6 py-3">
-        <span className="text-base font-semibold text-foreground">ILAW</span>
-        <div className="flex items-center gap-3">
-          {user.data && (
-            <span className="text-sm text-muted-foreground">
-              {user.data.firstName} {user.data.lastName}
-            </span>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLogout}
-            disabled={logout.isPending}
-          >
-            {logout.isPending ? "Signing out…" : "Log Out"}
-          </Button>
-        </div>
-      </header>
+    <div className="flex min-h-screen flex-col bg-background">
+      <DashboardNav />
       <main className="flex-1 p-6">
         <Outlet />
       </main>
