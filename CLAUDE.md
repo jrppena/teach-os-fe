@@ -16,6 +16,12 @@ before the backend row is created. The authenticated app area is enabled —
 ([src/app/routes/app/](src/app/routes/app/)). Registration has **no team concept**.
 Discussions/users/profile routes are intentionally not built yet.
 
+**Design system:** the app follows the **ILAW Design System** — deep-blue primary, amber
+accent reserved for "needs attention"/placeholder UI only, 8px (`rounded-lg`) canonical
+radius. Tokens live in [src/index.css](src/index.css); the full reference (palette,
+typography, badge/status patterns, TopNav) is in [design-system.md](design-system.md) —
+**read it before building or restyling UI.**
+
 **Tech stack:**
 - React 19 + TypeScript + Vite 8 (`@vitejs/plugin-react`)
 - Tailwind CSS v4 (`@tailwindcss/vite`) + shadcn/ui (`radix-vega` style, lucide icons)
