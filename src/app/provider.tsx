@@ -5,6 +5,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 
 import { MainErrorFallback } from '../components/errors/main';
 import { Spinner } from '@/components/ui/spinner/spinner';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthLoader } from '@/lib/auth';
 import { queryConfig } from '@/lib/react-query';
 
@@ -38,7 +39,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
                 </div>
               )}
             >
-              {children}
+              <TooltipProvider>{children}</TooltipProvider>
             </AuthLoader>
           </QueryClientProvider>
       </ErrorBoundary>
