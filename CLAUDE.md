@@ -4,7 +4,14 @@
 teachers (e.g. lesson planning). The marketing landing page and authentication flows
 are implemented and **live end-to-end**: the login/register forms
 ([src/features/auth/components/](src/features/auth/components/)) are wired to the
-`useLogin`/`useRegister` hooks, and the authenticated app area is enabled —
+`useLogin`/`useRegister` hooks (email/password) **and** to dedicated Google OAuth
+buttons (`useGoogleLogin` / `useGoogleSignup` in
+[src/features/auth/api/use-google-auth.ts](src/features/auth/api/use-google-auth.ts)).
+The auth page ([src/app/routes/auth/auth.tsx](src/app/routes/auth/auth.tsx)) renders
+a "Sign in with Google" button above the login form and a "Sign up with Google" button
+above the register form; brand-new Google accounts trigger an inline name-confirmation
+step ([src/features/auth/components/google-name-step.tsx](src/features/auth/components/google-name-step.tsx))
+before the backend row is created. The authenticated app area is enabled —
 `/app` (protected) renders a minimal shell + dashboard
 ([src/app/routes/app/](src/app/routes/app/)). Registration has **no team concept**.
 Discussions/users/profile routes are intentionally not built yet.
@@ -31,8 +38,17 @@ Discussions/users/profile routes are intentionally not built yet.
   credentials client-side; the Firebase ID token is attached as a `Bearer` header on the
   Axios instance. The canonical user record lives in the backend DB — fetched via
   `GET /auth/user/:firebaseUID`, created via `POST /auth/register`. `configureAuth`
-  exposes `useUser`/`useLogin`/`useRegister`/`useLogout`/`AuthLoader`; `ProtectedRoute`
-  redirects unauthenticated users to login.
+  exposes `useUser`/`useLogin`/`useRegister`/`useLogout`/`AuthLoader`. Google OAuth
+  primitives (`googleLogin`, `googleSignupStart`, `googleSignupComplete`,
+  `cancelGoogleSignup`) and `USER_QUERY_KEY` are also exported from `auth.tsx`; the
+  controller hooks (`useGoogleLogin`, `useGoogleSignup`) live in
+  [src/features/auth/api/use-google-auth.ts](src/features/auth/api/use-google-auth.ts)
+  and update the react-query-auth cache directly via `setQueryData(USER_QUERY_KEY, user)`.
+  Route guards live in the same file: `ProtectedRoute` redirects unauthenticated users to
+  login (preserving `redirectTo`); `PublicRoute` redirects already-authenticated users to
+  `/app`, honoring any `redirectTo` query param. Both return `null` while the auth check
+  is in-flight to avoid flash redirects. Auth routes (`/auth/login`, `/auth/register`)
+  are wrapped with `PublicRoute` in the router using `React.lazy` + element syntax.
 - **API client** ([src/lib/api-client.ts](src/lib/api-client.ts)): a shared Axios
   instance whose response interceptor unwraps `response.data`, pushes errors to the
   Zustand notifications store, and redirects to login on `401`.
@@ -42,7 +58,7 @@ Discussions/users/profile routes are intentionally not built yet.
 
 **Project structure (feature-based, "bulletproof-react" style):**
 - `src/app/` – app shell: `provider`, `router`, and route components under `routes/`
-- `src/features/<feature>/` – feature modules (e.g. `auth/components`); add new domains here
+- `src/features/<feature>/` – feature modules (e.g. `auth/components`, `auth/api`); add new domains here
 - `src/components/ui/` – shadcn primitives; each in its own folder with a `index.ts` barrel
 - `src/components/{landing,layouts,errors}/` – composed/shared UI
 - `src/config/` – `env.ts`, `paths.ts`

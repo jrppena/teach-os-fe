@@ -1,15 +1,17 @@
 import { QueryClient, useQueryClient } from '@tanstack/react-query';
-import { useMemo } from 'react';
-import { createBrowserRouter } from 'react-router';
+import { lazy, useMemo } from 'react';
+import { createBrowserRouter, Outlet } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 
 import { paths } from '@/config/paths';
-import { ProtectedRoute } from '@/lib/auth';
+import { ProtectedRoute, PublicRoute } from '@/lib/auth';
 
 import {
   default as AppRoot,
   ErrorBoundary as AppRootErrorBoundary,
 } from './routes/app/root';
+
+const AuthPage = lazy(() => import('@/app/routes/auth/auth'));
 
 const convert = (queryClient: QueryClient) => (m: any) => {
   const { clientLoader, clientAction, default: Component, ...rest } = m;
@@ -25,15 +27,33 @@ export const createAppRouter = (queryClient: QueryClient) =>
   createBrowserRouter([
     {
       path: paths.home.path,
-      lazy: () => import('@/app/routes/landing').then(convert(queryClient)),
+      element: (
+        <PublicRoute>
+          <Outlet />
+        </PublicRoute>
+      ),
+      children: [
+        {
+          index: true,
+          lazy: () => import('@/app/routes/landing').then(convert(queryClient)),
+        },
+      ],
     },
     {
       path: paths.auth.register.path,
-      lazy: () => import('@/app/routes/auth/auth').then(convert(queryClient)),
+      element: (
+        <PublicRoute>
+          <AuthPage />
+        </PublicRoute>
+      ),
     },
     {
       path: paths.auth.login.path,
-      lazy: () => import('@/app/routes/auth/auth').then(convert(queryClient)),
+      element: (
+        <PublicRoute>
+          <AuthPage />
+        </PublicRoute>
+      ),
     },
     {
       path: paths.app.root.path,

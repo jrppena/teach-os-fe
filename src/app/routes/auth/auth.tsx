@@ -1,13 +1,20 @@
-"use client"
+// Auth page — hosts the login/register tab pair and Google OAuth flows.
+// Renders GoogleNameStep in place of the Tabs when a brand-new Google sign-up
+// is in progress (useGoogleSignup().pendingPrefill is set). On any auth
+// success, navigates to redirectTo || /app with replace:true.
 
 import { BookOpen, CheckCircle2 } from "lucide-react"
-import { useLocation, useNavigate } from "react-router"
+import { useLocation, useNavigate, useSearchParams } from "react-router"
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs/tabs"
+import { Separator } from "@/components/ui/separator"
 import { paths } from "@/config/paths"
 import { LoginForm } from "@/features/auth/components/login-form"
 import { RegisterForm } from "@/features/auth/components/register-form"
+import { GoogleButton } from "@/features/auth/components/google-button"
+import { GoogleNameStep } from "@/features/auth/components/google-name-step"
+import { useGoogleSignup, useGoogleLogin } from "@/features/auth/api/use-google-auth"
 
 function BrandPanel() {
   const highlights = [
@@ -52,9 +59,22 @@ function BrandPanel() {
   )
 }
 
+/** Thin divider with centred "or continue with email" label. */
+function OrDivider() {
+  return (
+    <div className="flex items-center gap-3 my-1">
+      <Separator className="flex-1" />
+      <span className="text-xs text-muted-foreground shrink-0">or continue with email</span>
+      <Separator className="flex-1" />
+    </div>
+  )
+}
+
 export default function AuthPage() {
   const location = useLocation()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirectTo = searchParams.get("redirectTo")
 
   const isRegister = location.pathname === paths.auth.register.path
   const activeTab = isRegister ? "register" : "login"
@@ -66,6 +86,25 @@ export default function AuthPage() {
         ? paths.auth.register.path
         : paths.auth.login.path
     navigate(`${target}${search}`, { replace: true })
+  }
+
+  const goToApp = () => navigate(redirectTo || paths.app.root.getHref(), { replace: true })
+
+  // ── Google login (sign-in tab) ───────────────────────────────────────────
+  const googleLogin = useGoogleLogin()
+  const handleGoogleLogin = () => {
+    googleLogin.mutate(undefined, { onSuccess: goToApp })
+  }
+
+  // ── Google signup (register tab, two-step) ───────────────────────────────
+  const googleSignup = useGoogleSignup()
+  const handleGoogleSignupStart = async () => {
+    const user = await googleSignup.start()
+    if (user) goToApp()
+  }
+  const handleGoogleSignupComplete = async (firstName: string, lastName: string, password: string) => {
+    const user = await googleSignup.complete(firstName, lastName, password)
+    if (user) goToApp()
   }
 
   return (
@@ -89,32 +128,61 @@ export default function AuthPage() {
         <div className="w-full max-w-sm">
           <Card className="shadow-md border-border">
             <CardHeader className="pb-4 pt-6 px-6">
-              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <TabsList className="w-full mb-6">
-                  <TabsTrigger value="login" className="flex-1 text-sm">Log In</TabsTrigger>
-                  <TabsTrigger value="register" className="flex-1 text-sm">Create Account</TabsTrigger>
-                </TabsList>
+              {/* Name-prompt step replaces the tabs when a new Google account is pending */}
+              {googleSignup.pendingPrefill ? (
+                <GoogleNameStep
+                  prefill={googleSignup.pendingPrefill}
+                  isPending={googleSignup.isPending}
+                  error={googleSignup.error}
+                  onComplete={handleGoogleSignupComplete}
+                  onCancel={googleSignup.cancel}
+                />
+              ) : (
+                <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                  <TabsList className="w-full mb-6">
+                    <TabsTrigger value="login" className="flex-1 text-sm">Log In</TabsTrigger>
+                    <TabsTrigger value="register" className="flex-1 text-sm">Create Account</TabsTrigger>
+                  </TabsList>
 
-                <TabsContent value="login" className="mt-0">
-                  <div className="mb-5">
-                    <h2 className="text-lg font-semibold text-foreground">Welcome back</h2>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      Sign in to your ILAW account.
-                    </p>
-                  </div>
-                  <LoginForm />
-                </TabsContent>
+                  <TabsContent value="login" className="mt-0">
+                    <div className="mb-5">
+                      <h2 className="text-lg font-semibold text-foreground">Welcome back</h2>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        Sign in to your ILAW account.
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      <GoogleButton
+                        label="Sign in with Google"
+                        onClick={handleGoogleLogin}
+                        isPending={googleLogin.isPending}
+                        error={googleLogin.isError ? (googleLogin.error as Error)?.message : null}
+                      />
+                      <OrDivider />
+                      <LoginForm />
+                    </div>
+                  </TabsContent>
 
-                <TabsContent value="register" className="mt-0">
-                  <div className="mb-5">
-                    <h2 className="text-lg font-semibold text-foreground">Create your account</h2>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      Join ILAW and start generating DepEd-compliant lesson plans.
-                    </p>
-                  </div>
-                  <RegisterForm />
-                </TabsContent>
-              </Tabs>
+                  <TabsContent value="register" className="mt-0">
+                    <div className="mb-5">
+                      <h2 className="text-lg font-semibold text-foreground">Create your account</h2>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        Join ILAW and start generating DepEd-compliant lesson plans.
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      <GoogleButton
+                        label="Sign up with Google"
+                        onClick={handleGoogleSignupStart}
+                        isPending={googleSignup.isPending}
+                        error={googleSignup.error}
+                      />
+                      <OrDivider />
+                      <RegisterForm />
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              )}
             </CardHeader>
 
             <CardContent className="px-6 pb-6 pt-0">

@@ -1,8 +1,11 @@
+// Firebase app initialisation + shared service exports (Auth, Firestore, Storage,
+// GoogleAuthProvider). Import these singletons throughout the app instead of
+// calling initializeApp / getAuth etc. multiple times.
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import { env } from '@/config/env'; // adjust path to your env file location
+import { env } from '@/config/env';
 
 const firebaseConfig = {
   apiKey: env.FIREBASE_API_KEY,
@@ -20,3 +23,9 @@ export const firebaseApp = initializeApp(firebaseConfig);
 export const auth = getAuth(firebaseApp);
 export const db = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
+
+// Pre-configured Google OAuth provider — request email + profile scopes so
+// getAdditionalUserInfo returns given_name / family_name for the name-prompt step.
+export const googleProvider = new GoogleAuthProvider();
+googleProvider.addScope('email');
+googleProvider.addScope('profile');
