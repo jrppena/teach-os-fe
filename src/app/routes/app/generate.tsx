@@ -19,7 +19,6 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
 import { paths } from "@/config/paths"
 import { WizardStepper } from "@/features/generate/components/wizard-stepper"
 import {
@@ -102,18 +101,14 @@ export default function GeneratePage() {
   }
 
   const stepInfo = STEP_TITLES[step - 1]
-  const isResult = step === 4
 
   return (
     <div className="min-h-screen bg-background">
       <DashboardNav />
 
-      <main
-        className={cn(
-          "mx-auto px-4 py-10 sm:py-14",
-          isResult ? "max-w-6xl" : "max-w-2xl",
-        )}
-      >
+      {/* Match DashboardNav's inner container (max-w-7xl + px-4) so the content's
+          left/right edges line up with the nav's logo and avatar on every step. */}
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         {/* Page heading */}
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-semibold text-foreground tracking-tight">

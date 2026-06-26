@@ -148,7 +148,9 @@ export function DashboardNav() {
                   <UserIcon data-icon="inline-start" />
                   Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem disabled>
+                <DropdownMenuItem
+                  onClick={() => navigate(paths.app.settings.getHref())}
+                >
                   <Settings data-icon="inline-start" />
                   Settings
                 </DropdownMenuItem>

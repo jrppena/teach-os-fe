@@ -33,5 +33,10 @@ export const paths = {
         path: '/generate',
         getHref: () => '/generate',
       },
+      // User configuration (AI-provider API keys, etc.).
+      settings: {
+        path: '/settings',
+        getHref: () => '/settings',
+      },
     },
   } as const;

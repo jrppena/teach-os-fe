@@ -129,7 +129,7 @@ export function StepLessonDetails({ data, onChange, onNext }: StepLessonDetailsP
             Grade Level <span className="text-destructive" aria-hidden="true">*</span>
           </Label>
           <Select value={data.gradeLevel} onValueChange={(v) => set("gradeLevel", v)}>
-            <SelectTrigger id="gradeLevel" aria-required="true">
+            <SelectTrigger id="gradeLevel" className="w-full" aria-required="true">
               <SelectValue placeholder="Select grade" />
             </SelectTrigger>
             <SelectContent>
@@ -146,7 +146,7 @@ export function StepLessonDetails({ data, onChange, onNext }: StepLessonDetailsP
             Learning Area <span className="text-destructive" aria-hidden="true">*</span>
           </Label>
           <Select value={data.learningArea} onValueChange={(v) => set("learningArea", v)}>
-            <SelectTrigger id="learningArea" aria-required="true">
+            <SelectTrigger id="learningArea" className="w-full" aria-required="true">
               <SelectValue placeholder="Select subject" />
             </SelectTrigger>
             <SelectContent>
@@ -163,7 +163,7 @@ export function StepLessonDetails({ data, onChange, onNext }: StepLessonDetailsP
             Term / Quarter <span className="text-destructive" aria-hidden="true">*</span>
           </Label>
           <Select value={data.term} onValueChange={(v) => set("term", v)}>
-            <SelectTrigger id="term" aria-required="true">
+            <SelectTrigger id="term" className="w-full" aria-required="true">
               <SelectValue placeholder="Select term" />
             </SelectTrigger>
             <SelectContent>
@@ -180,7 +180,7 @@ export function StepLessonDetails({ data, onChange, onNext }: StepLessonDetailsP
             Week <span className="text-destructive" aria-hidden="true">*</span>
           </Label>
           <Select value={data.week} onValueChange={(v) => set("week", v)}>
-            <SelectTrigger id="week" aria-required="true">
+            <SelectTrigger id="week" className="w-full" aria-required="true">
               <SelectValue placeholder="Select week" />
             </SelectTrigger>
             <SelectContent>

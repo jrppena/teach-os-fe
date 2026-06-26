@@ -13,7 +13,13 @@ above the register form; brand-new Google accounts trigger an inline name-confir
 step ([src/features/auth/components/google-name-step.tsx](src/features/auth/components/google-name-step.tsx))
 before the backend row is created. The authenticated app area is enabled —
 `/app` (protected) renders a minimal shell + dashboard
-([src/app/routes/app/](src/app/routes/app/)). Registration has **no team concept**.
+([src/app/routes/app/](src/app/routes/app/)); `/generate` hosts the lesson-plan
+wizard, and `/settings` ([src/app/routes/app/settings.tsx](src/app/routes/app/settings.tsx),
+reachable from the user menu in DashboardNav) hosts user configuration — its first
+section, AI-provider API keys (Grok/Gemini), lives in
+[src/features/settings/](src/features/settings/) and persists to `localStorage` behind
+the `useApiKeys` seam ([src/features/settings/api/use-api-keys.ts](src/features/settings/api/use-api-keys.ts)),
+pending a backend `provider-keys` endpoint. Registration has **no team concept**.
 Discussions/users/profile routes are intentionally not built yet.
 
 **Design system:** the app follows the **ILAW Design System** — deep-blue primary, amber
