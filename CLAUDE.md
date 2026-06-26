@@ -17,9 +17,12 @@ before the backend row is created. The authenticated app area is enabled —
 wizard, and `/settings` ([src/app/routes/app/settings.tsx](src/app/routes/app/settings.tsx),
 reachable from the user menu in DashboardNav) hosts user configuration — its first
 section, AI-provider API keys (Grok/Gemini), lives in
-[src/features/settings/](src/features/settings/) and persists to `localStorage` behind
-the `useApiKeys` seam ([src/features/settings/api/use-api-keys.ts](src/features/settings/api/use-api-keys.ts)),
-pending a backend `provider-keys` endpoint. Registration has **no team concept**.
+[src/features/settings/](src/features/settings/) and persists to the **backend** via
+`GET`/`PATCH /settings/provider-keys` (masked/write-only — the raw key is never returned,
+only a ``configured`` flag and masked preview). The hooks
+([src/features/settings/api/use-api-keys.ts](src/features/settings/api/use-api-keys.ts))
+use TanStack Query v5 (`useProviderKeys` / `useUpdateProviderKeys`) over the shared Axios
+client. No `localStorage` is used for keys. Registration has **no team concept**.
 Discussions/users/profile routes are intentionally not built yet.
 
 **Design system:** the app follows the **ILAW Design System** — deep-blue primary, amber

@@ -45,7 +45,7 @@ export default function SettingsPage() {
             </CardTitle>
             <CardDescription className="text-sm">
               Add your own provider key and pick which one ILAW should use. Keys
-              are stored on this device only for now.
+              are securely stored on your account.
             </CardDescription>
           </CardHeader>
           <CardContent>

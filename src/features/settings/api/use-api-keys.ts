@@ -1,110 +1,54 @@
 /**
- * Settings · API-keys persistence seam.
+ * Settings · Provider-key API hooks.
  *
- * Reads/writes the AI-provider API-key configuration. For now this is backed by
- * `localStorage` (the backend has no provider-keys endpoint yet) — the same
- * "build the FE against a local mock" approach used by the generate wizard.
+ * TanStack Query v5 hooks that talk to ``GET /settings/provider-keys`` and
+ * ``PATCH /settings/provider-keys`` via the shared Axios client. The client
+ * unwraps ``response.data``, attaches the Firebase Bearer token, and surfaces
+ * errors through the Zustand notifications store automatically.
  *
- * Note: this module is the single swap point. When the backend lands, replace
- * `loadApiKeys`/`persistApiKeys` (and, ideally, the hook internals) with a
- * TanStack `useQuery`/`useMutation` against GET/PATCH
- * `/users/{uid}/provider-keys`; the `ApiKeysConfig` shape is meant to match it.
+ * These hooks replace the former ``localStorage`` seam — no local state is
+ * read or written by this module.
  */
 
-import { useCallback, useState } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
-import {
-  DEFAULT_API_KEYS_CONFIG,
-  type ApiKeysConfig,
-  type ProviderId,
-} from "@/features/settings/types"
+import { api } from "@/lib/api-client"
+import type { ProviderKeysResponse, ProviderKeysUpdate } from "@/features/settings/types"
 
-/** localStorage key under which the config is serialized. */
-const STORAGE_KEY = "teacher-os:api-keys"
+/** Stable query key for the provider-keys resource. */
+export const PROVIDER_KEYS_QUERY_KEY = ["provider-keys"] as const
 
 /**
- * Narrow unknown parsed JSON into a valid {@link ApiKeysConfig}, falling back to
- * defaults for any missing/invalid field so a corrupt entry can't break the UI.
+ * Fetch the masked provider-key status for the authenticated user.
+ *
+ * @returns A TanStack Query result containing {@link ProviderKeysResponse}
+ *   (``activeProvider`` + masked ``keys`` per provider). The raw API key is
+ *   never returned — only ``configured`` + ``preview``.
  */
-function normalize(raw: unknown): ApiKeysConfig {
-  if (typeof raw !== "object" || raw === null) return DEFAULT_API_KEYS_CONFIG
+export function useProviderKeys() {
+  return useQuery<ProviderKeysResponse>({
+    queryKey: PROVIDER_KEYS_QUERY_KEY,
+    queryFn: () => api.get("/settings/provider-keys") as unknown as Promise<ProviderKeysResponse>,
+  })
+}
 
-  const value = raw as Partial<ApiKeysConfig>
-  const keys = (value.keys ?? {}) as Partial<Record<ProviderId, string>>
-  const activeProvider: ProviderId =
-    value.activeProvider === "grok" || value.activeProvider === "gemini"
-      ? value.activeProvider
-      : DEFAULT_API_KEYS_CONFIG.activeProvider
+/**
+ * Partially update provider settings for the authenticated user.
+ *
+ * On success, invalidates the ``provider-keys`` query so the UI refetches the
+ * latest masked state from the server.
+ *
+ * @returns A TanStack Query mutation object. Call ``mutation.mutate(body)`` with
+ *   a {@link ProviderKeysUpdate} — all fields optional.
+ */
+export function useUpdateProviderKeys() {
+  const queryClient = useQueryClient()
 
-  return {
-    activeProvider,
-    keys: {
-      grok: typeof keys.grok === "string" ? keys.grok : "",
-      gemini: typeof keys.gemini === "string" ? keys.gemini : "",
+  return useMutation<ProviderKeysResponse, Error, ProviderKeysUpdate>({
+    mutationFn: (body) =>
+      api.patch("/settings/provider-keys", body) as unknown as Promise<ProviderKeysResponse>,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PROVIDER_KEYS_QUERY_KEY })
     },
-  }
-}
-
-/**
- * Load the saved configuration from `localStorage`.
- *
- * @returns The persisted config, or {@link DEFAULT_API_KEYS_CONFIG} when nothing
- *   is stored or the stored value is unreadable.
- */
-// TODO(backend): replace with GET /users/{uid}/provider-keys.
-function loadApiKeys(): ApiKeysConfig {
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY)
-    return stored ? normalize(JSON.parse(stored)) : DEFAULT_API_KEYS_CONFIG
-  } catch {
-    return DEFAULT_API_KEYS_CONFIG
-  }
-}
-
-/**
- * Persist the configuration to `localStorage`.
- *
- * @param config - The configuration to store.
- * @returns Nothing. Failures (e.g. storage disabled) are swallowed silently.
- */
-// TODO(backend): replace with PATCH /users/{uid}/provider-keys.
-function persistApiKeys(config: ApiKeysConfig): void {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
-  } catch {
-    // Ignore — storage may be unavailable (private mode, quota, etc.).
-  }
-}
-
-/** Result of {@link useApiKeys}. */
-interface UseApiKeysResult {
-  /** Currently persisted configuration (defaults until hydrated). */
-  config: ApiKeysConfig
-  /** True once the initial `localStorage` read has completed. */
-  isLoaded: boolean
-  /** Persist a new configuration and update local state. */
-  save: (next: ApiKeysConfig) => void
-}
-
-/**
- * React hook exposing the persisted API-key configuration and a `save` action.
- *
- * This is a client-only SPA, so the persisted config is read once during lazy
- * state initialization — the first render already reflects storage (no
- * hydration effect, no flash).
- *
- * @returns `{ config, isLoaded, save }`.
- */
-export function useApiKeys(): UseApiKeysResult {
-  const [config, setConfig] = useState<ApiKeysConfig>(loadApiKeys)
-
-  const save = useCallback((next: ApiKeysConfig) => {
-    persistApiKeys(next)
-    setConfig(next)
-  }, [])
-
-  // `isLoaded` is always true today; kept on the interface so the eventual
-  // backend swap (an async useQuery) can report real loading state without
-  // changing callers.
-  return { config, isLoaded: true, save }
+  })
 }
