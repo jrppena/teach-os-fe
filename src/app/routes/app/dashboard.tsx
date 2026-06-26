@@ -1,12 +1,12 @@
 /**
  * Dashboard — index route of the authenticated app (`/app`).
  *
- * Greets the signed-in user and lists their lesson plans as a responsive
- * card grid. No lesson-plan API exists yet, so this renders representative
- * sample data; swap `SAMPLE_PLANS` for a real query when the endpoint lands.
+ * Greets the signed-in user and lists their saved lesson plans as a responsive
+ * card grid, backed by `GET /lesson-plans`. Cards open the plan detail view
+ * (`/plans/:id`) for review/edit and support delete.
  */
 
-import { Plus } from "lucide-react"
+import { Loader2, Plus } from "lucide-react"
 import { useNavigate } from "react-router"
 
 import { Button } from "@/components/ui/button"
@@ -15,49 +15,42 @@ import {
   LessonPlanCard,
   type LessonPlan,
 } from "@/features/dashboard/components/lesson-plan-card"
+import {
+  useDeleteLessonPlan,
+  useLessonPlans,
+} from "@/features/generate/api/use-lesson-plans"
+import type { LessonPlanSummary } from "@/features/generate/types"
 import { useUser } from "@/lib/auth"
 
-// Placeholder data until a lesson-plan endpoint is wired up.
-const SAMPLE_PLANS: LessonPlan[] = [
-  {
-    id: "1",
-    title: "Figures of Speech in Literary Texts",
-    subject: "English 9",
-    quarter: "Q3 · Week 2",
+/** Map a backend summary to the presentational `LessonPlanCard` shape. */
+function toCardPlan(summary: LessonPlanSummary): LessonPlan {
+  return {
+    id: summary.id,
+    title: summary.title,
+    subject: summary.learningAreas,
+    quarter: summary.gradeLevelAndSection,
+    // Fresh AI drafts always need teacher review before use.
     status: "GENERATED",
-    progress: 72,
-    progressLabel: "72% complete",
-    updatedLabel: "2 days ago",
-    placeholderCount: 3,
-  },
-  {
-    id: "2",
-    title: "Solving Systems of Linear Equations",
-    subject: "Mathematics 9",
-    quarter: "Q1 · Week 5",
-    status: "COMPLETED",
-    progress: 100,
-    progressLabel: "Finalized",
-    updatedLabel: "15 days ago",
-    placeholderCount: 0,
-  },
-  {
-    id: "3",
-    title: "Aralin sa Kasaysayan ng Pilipinas",
-    subject: "Araling Panlipunan 9",
-    quarter: "Q2 · Week 1",
-    status: "DRAFT",
-    progress: 20,
-    progressLabel: "20% complete",
-    updatedLabel: "Today",
-    placeholderCount: 0,
-  },
-]
+    progress: 0,
+    progressLabel: "AI draft — needs review",
+    updatedLabel: new Date(summary.createdAt).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }),
+    placeholderCount: summary.placeholderCount,
+  }
+}
 
 export default function Dashboard() {
   const user = useUser()
   const navigate = useNavigate()
-  const plans = SAMPLE_PLANS
+  const { data, isLoading } = useLessonPlans()
+  const deletePlan = useDeleteLessonPlan()
+
+  const plans = data ?? []
+
+  const openPlan = (id: string) => navigate(paths.app.planDetail.getHref(id))
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -76,7 +69,12 @@ export default function Dashboard() {
         </Button>
       </header>
 
-      {plans.length === 0 ? (
+      {isLoading ? (
+        <div className="mt-16 flex flex-col items-center justify-center gap-3 text-center">
+          <Loader2 className="size-7 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading your lesson plans…</p>
+        </div>
+      ) : plans.length === 0 ? (
         <div className="mt-10 flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border py-16 text-center">
           <p className="text-sm font-medium text-foreground">No lesson plans yet</p>
           <p className="max-w-sm text-sm text-muted-foreground">
@@ -89,8 +87,13 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {plans.map((plan) => (
-            <LessonPlanCard key={plan.id} plan={plan} />
+          {plans.map((summary) => (
+            <LessonPlanCard
+              key={summary.id}
+              plan={toCardPlan(summary)}
+              onEdit={openPlan}
+              onDelete={(id) => deletePlan.mutate(id)}
+            />
           ))}
         </div>
       )}

@@ -33,6 +33,11 @@ export const paths = {
         path: '/generate',
         getHref: () => '/generate',
       },
+      // Saved lesson-plan detail view (read/edit a generated plan).
+      planDetail: {
+        path: '/plans/:id',
+        getHref: (id: string) => `/plans/${id}`,
+      },
       // User configuration (AI-provider API keys, etc.).
       settings: {
         path: '/settings',

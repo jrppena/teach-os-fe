@@ -9,7 +9,7 @@
  */
 
 import { useState } from "react"
-import { useNavigate } from "react-router"
+import { Link, useNavigate } from "react-router"
 
 import { DashboardNav } from "@/components/layouts/dashboard-nav"
 import {
@@ -32,8 +32,13 @@ import {
 } from "@/features/generate/components/step-competencies"
 import { StepReview } from "@/features/generate/components/step-review"
 import { StepResult } from "@/features/generate/components/step-result"
-import { generateLessonPlan } from "@/features/generate/mock-generator"
-import type { GeneratedLessonPlan } from "@/features/generate/types"
+import { useGenerateLessonPlan } from "@/features/generate/api/use-generate-lesson-plan"
+import type {
+  GeneratedLessonPlan,
+  LessonPlanGenerateRequest,
+} from "@/features/generate/types"
+import { useProviderKeys } from "@/features/settings/api/use-api-keys"
+import { PROVIDERS } from "@/features/settings/types"
 
 const STEP_TITLES = [
   {
@@ -66,8 +71,10 @@ const STEP_TITLES = [
 export default function GeneratePage() {
   const navigate = useNavigate()
   const [step, setStep] = useState(1)
-  const [isGenerating, setIsGenerating] = useState(false)
   const [plan, setPlan] = useState<GeneratedLessonPlan | null>(null)
+
+  const generate = useGenerateLessonPlan()
+  const { data: providerKeys } = useProviderKeys()
 
   const [details, setDetails] = useState<LessonDetailsData>({
     lessonTitle: "",
@@ -88,17 +95,50 @@ export default function GeneratePage() {
     additionalInstructions: "",
   })
 
-  // Run the (mock) generator, then advance to the result step.
-  // TODO: replace generateLessonPlan with the real API call (POST /lesson-plans)
-  // once the backend exists; the GeneratedLessonPlan shape is meant to match it.
+  // Build the backend request from the wizard state (trim/drop blank list items).
+  const toRequest = (): LessonPlanGenerateRequest => ({
+    lessonTitle: details.lessonTitle,
+    gradeLevel: details.gradeLevel,
+    learningArea: details.learningArea,
+    term: details.term,
+    week: details.week,
+    teacherName: details.teacherName,
+    section: details.section,
+    sessions: details.sessions,
+    minutesPerSession: details.minutesPerSession,
+    references: details.references.map((r) => r.trim()).filter(Boolean),
+    aiDeclaration: details.aiDeclaration,
+    competencies: competencies.competencies.map((c) => c.trim()).filter(Boolean),
+    additionalInstructions: competencies.additionalInstructions,
+  })
+
+  // Generate via the active provider, then advance to the result step on success.
   const handleGenerate = () => {
-    setIsGenerating(true)
-    setTimeout(() => {
-      setPlan(generateLessonPlan(details, competencies))
-      setIsGenerating(false)
-      setStep(4)
-    }, 1800)
+    generate.mutate(toRequest(), {
+      onSuccess: (detail) => {
+        setPlan(detail.plan)
+        setStep(4)
+      },
+    })
   }
+
+  // Block generation when the user's active provider has no key configured.
+  const activeProvider = providerKeys?.activeProvider
+  const activeConfigured = activeProvider
+    ? providerKeys?.keys[activeProvider]?.configured
+    : undefined
+  const activeLabel =
+    PROVIDERS.find((p) => p.id === activeProvider)?.label ?? activeProvider
+  const blockedNotice =
+    activeProvider && activeConfigured === false ? (
+      <>
+        No API key is set for your active provider ({activeLabel}).{" "}
+        <Link to={paths.app.settings.getHref()} className="font-medium underline">
+          Add one in Settings
+        </Link>{" "}
+        to generate a lesson plan.
+      </>
+    ) : undefined
 
   const stepInfo = STEP_TITLES[step - 1]
 
@@ -156,7 +196,8 @@ export default function GeneratePage() {
                 competencies={competencies}
                 onBack={() => setStep(2)}
                 onGenerate={handleGenerate}
-                isGenerating={isGenerating}
+                isGenerating={generate.isPending}
+                blockedNotice={blockedNotice}
               />
             )}
             {step === 4 && plan && (
