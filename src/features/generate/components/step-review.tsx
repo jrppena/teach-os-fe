@@ -88,10 +88,12 @@ export function StepReview({
           id="summary-heading"
           className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"
         >
-          Lesson Details
+          Lesson Information
         </h2>
         <div className="rounded-lg border border-border bg-muted/30 px-4">
           <dl>
+            <SummaryRow label="Lesson Title" value={details.lessonTitle} />
+            <Separator />
             <SummaryRow label="Grade Level" value={details.gradeLevel} />
             <Separator />
             <SummaryRow label="Learning Area" value={details.learningArea} />
@@ -102,7 +104,7 @@ export function StepReview({
             <Separator />
             <SummaryRow
               label="Sessions"
-              value={`${details.sessions} session${details.sessions !== 1 ? "s" : ""}`}
+              value={`${details.sessions} session${details.sessions !== 1 ? "s" : ""} (${details.minutesPerSession} min each)`}
             />
             {details.teacherName && (
               <>
@@ -114,6 +116,29 @@ export function StepReview({
               <>
                 <Separator />
                 <SummaryRow label="Section" value={details.section} />
+              </>
+            )}
+            {details.references.some((r) => r.trim()) && (
+              <>
+                <Separator />
+                <SummaryRow
+                  label="References"
+                  value={
+                    <ul className="list-disc list-inside space-y-0.5">
+                      {details.references
+                        .filter((r) => r.trim())
+                        .map((r, i) => (
+                          <li key={i}>{r}</li>
+                        ))}
+                    </ul>
+                  }
+                />
+              </>
+            )}
+            {details.aiDeclaration.trim() && (
+              <>
+                <Separator />
+                <SummaryRow label="AI Use Declaration" value={details.aiDeclaration} />
               </>
             )}
           </dl>

@@ -12,9 +12,10 @@ export interface Step {
 }
 
 const STEPS: Step[] = [
-  { number: 1, label: "Lesson Details" },
+  { number: 1, label: "Lesson Information" },
   { number: 2, label: "Learning Competencies" },
   { number: 3, label: "Review & Generate" },
+  { number: 4, label: "Result" },
 ]
 
 interface WizardStepperProps {
@@ -76,7 +77,7 @@ export function WizardStepper({ currentStep }: WizardStepperProps) {
               {!isLast && (
                 <div
                   className={cn(
-                    "h-px w-16 sm:w-24 mx-2 transition-colors",
+                    "h-px w-10 sm:w-16 mx-2 transition-colors",
                     isComplete ? "bg-primary" : "bg-border"
                   )}
                   aria-hidden="true"

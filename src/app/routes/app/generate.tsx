@@ -1,10 +1,11 @@
 /**
  * Generate New Lesson Plan — primary post-auth destination (`/generate`).
  *
- * A 3-step wizard (lesson details → competencies → review) that collects the
- * inputs for a DepEd MATATAG-aligned lesson plan. Owns the wizard state and,
- * on submit, simulates generation before returning to the dashboard. Rendered
- * standalone with its own <DashboardNav/> (no /app shell).
+ * A 4-step wizard (lesson information → competencies → review → result) that
+ * collects inputs for a DepEd MATATAG / ILAW lesson plan, then renders the
+ * generated plan as a per-session table. Owns the wizard state and, on submit,
+ * runs the local mock generator. Rendered standalone with its own
+ * <DashboardNav/> (no /app shell).
  */
 
 import { useState } from "react"
@@ -18,10 +19,12 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 import { paths } from "@/config/paths"
 import { WizardStepper } from "@/features/generate/components/wizard-stepper"
 import {
   StepLessonDetails,
+  DEFAULT_AI_DECLARATION,
   type LessonDetailsData,
 } from "@/features/generate/components/step-lesson-details"
 import {
@@ -29,10 +32,13 @@ import {
   type CompetenciesData,
 } from "@/features/generate/components/step-competencies"
 import { StepReview } from "@/features/generate/components/step-review"
+import { StepResult } from "@/features/generate/components/step-result"
+import { generateLessonPlan } from "@/features/generate/mock-generator"
+import type { GeneratedLessonPlan } from "@/features/generate/types"
 
 const STEP_TITLES = [
   {
-    title: "Lesson Details",
+    title: "Lesson Information",
     description:
       "Fill in the basic information for your lesson plan. Required fields are marked with *",
   },
@@ -45,20 +51,27 @@ const STEP_TITLES = [
     description:
       "Review your inputs, read the compliance notice, then generate your draft.",
   },
+  {
+    title: "Your ILAW Lesson Plan",
+    description:
+      "AI-generated draft with one column per session. Review and complete the highlighted fields.",
+  },
 ]
 
 /**
  * Lesson-plan generation page.
  *
- * @returns The wizard UI; advances through three steps and, on generate,
- *   simulates an async draft then navigates to the dashboard.
+ * @returns The wizard UI; advances through four steps and, on generate, runs the
+ *   mock generator and shows the resulting ILAW lesson plan.
  */
 export default function GeneratePage() {
   const navigate = useNavigate()
   const [step, setStep] = useState(1)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [plan, setPlan] = useState<GeneratedLessonPlan | null>(null)
 
   const [details, setDetails] = useState<LessonDetailsData>({
+    lessonTitle: "",
     gradeLevel: "",
     learningArea: "",
     term: "",
@@ -66,6 +79,9 @@ export default function GeneratePage() {
     teacherName: "",
     section: "",
     sessions: 1,
+    minutesPerSession: 45,
+    references: [""],
+    aiDeclaration: DEFAULT_AI_DECLARATION,
   })
 
   const [competencies, setCompetencies] = useState<CompetenciesData>({
@@ -73,23 +89,31 @@ export default function GeneratePage() {
     additionalInstructions: "",
   })
 
-  // Simulate AI generation, then return to the dashboard.
-  // TODO: replace the timeout with the real generation API call (POST /lesson-plans
-  // or similar) and navigate to the generated draft once the backend exists.
+  // Run the (mock) generator, then advance to the result step.
+  // TODO: replace generateLessonPlan with the real API call (POST /lesson-plans)
+  // once the backend exists; the GeneratedLessonPlan shape is meant to match it.
   const handleGenerate = () => {
     setIsGenerating(true)
     setTimeout(() => {
-      navigate(paths.app.dashboard.getHref())
-    }, 3500)
+      setPlan(generateLessonPlan(details, competencies))
+      setIsGenerating(false)
+      setStep(4)
+    }, 1800)
   }
 
   const stepInfo = STEP_TITLES[step - 1]
+  const isResult = step === 4
 
   return (
     <div className="min-h-screen bg-background">
       <DashboardNav />
 
-      <main className="mx-auto max-w-2xl px-4 py-10 sm:py-14">
+      <main
+        className={cn(
+          "mx-auto px-4 py-10 sm:py-14",
+          isResult ? "max-w-6xl" : "max-w-2xl",
+        )}
+      >
         {/* Page heading */}
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-semibold text-foreground tracking-tight">
@@ -140,12 +164,18 @@ export default function GeneratePage() {
                 isGenerating={isGenerating}
               />
             )}
+            {step === 4 && plan && (
+              <StepResult
+                plan={plan}
+                onBackToDashboard={() => navigate(paths.app.dashboard.getHref())}
+              />
+            )}
           </CardContent>
         </Card>
 
         {/* Step indicator for mobile */}
         <p className="mt-4 text-center text-xs text-muted-foreground sm:hidden">
-          Step {step} of 3 — {stepInfo.title}
+          Step {step} of 4 — {stepInfo.title}
         </p>
       </main>
     </div>
