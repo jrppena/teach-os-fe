@@ -14,12 +14,27 @@ step ([src/features/auth/components/google-name-step.tsx](src/features/auth/comp
 before the backend row is created. The authenticated app area is enabled —
 `/app` (protected) renders a minimal shell + dashboard
 ([src/app/routes/app/](src/app/routes/app/)); `/generate` hosts the lesson-plan
-wizard, and `/settings` ([src/app/routes/app/settings.tsx](src/app/routes/app/settings.tsx),
+wizard, `/plans/:id` ([src/app/routes/app/plan-detail.tsx](src/app/routes/app/plan-detail.tsx))
+shows a saved plan (reusing `StepResult`), and `/settings`
+([src/app/routes/app/settings.tsx](src/app/routes/app/settings.tsx),
 reachable from the user menu in DashboardNav) hosts user configuration — its first
 section, AI-provider API keys (Grok/Gemini), lives in
 [src/features/settings/](src/features/settings/) and persists to the **backend** via
 `GET`/`PATCH /settings/provider-keys` (masked/write-only — the raw key is never returned,
-only a ``configured`` flag and masked preview). The hooks
+only a ``configured`` flag and masked preview).
+
+**Lesson-plan generation (live end-to-end):** the `/generate` wizard now calls the real
+`POST /lesson-plans` endpoint via `useGenerateLessonPlan`
+([src/features/generate/api/use-generate-lesson-plan.ts](src/features/generate/api/use-generate-lesson-plan.ts));
+the former local `mock-generator.ts` is removed. Before generating, the review step is gated on
+the active provider having a key configured (reads `useProviderKeys`; shows an amber
+"Add one in Settings" notice and disables Generate otherwise). The dashboard
+([src/app/routes/app/dashboard.tsx](src/app/routes/app/dashboard.tsx)) lists saved plans via
+`useLessonPlans` and supports open (→ `/plans/:id`) and delete (`useDeleteLessonPlan`); list/detail/
+delete hooks live in [src/features/generate/api/use-lesson-plans.ts](src/features/generate/api/use-lesson-plans.ts).
+The `/lesson-plans` request/record types sit in
+[src/features/generate/types.ts](src/features/generate/types.ts). The shared Axios error
+interceptor now surfaces FastAPI's `detail` field (then `message`). The hooks
 ([src/features/settings/api/use-api-keys.ts](src/features/settings/api/use-api-keys.ts))
 use TanStack Query v5 (`useProviderKeys` / `useUpdateProviderKeys`) over the shared Axios
 client. No `localStorage` is used for keys. Registration has **no team concept**.
