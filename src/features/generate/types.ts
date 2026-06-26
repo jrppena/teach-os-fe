@@ -7,9 +7,11 @@
  * per-session field is an array whose length equals the number of sessions, so
  * `field[i]` is the content for Session `i + 1`.
  *
- * This shape is produced locally by `mock-generator.ts` today and is intended to
- * be a drop-in match for a future backend `POST /lesson-plans` response.
+ * This shape is now produced by the backend `POST /lesson-plans` response; the
+ * request/record types below mirror the rest of that contract.
  */
+
+import type { ProviderId } from "@/features/settings/types"
 
 /** A single Learning Objective cell: the docx "Knowledge / Skill / Task" triad. */
 export interface SessionObjective {
@@ -99,3 +101,51 @@ export const ROW_GUIDANCE = {
 
 /** Marker prefix for teacher-to-complete content (rendered amber). */
 export const TEACHER_TODO_PREFIX = "[Teacher to complete]"
+
+// ── Backend `/lesson-plans` contract (camelCase, mirrors the BE schemas) ─────────
+
+/**
+ * Body for `POST /lesson-plans` — the Step 1 + Step 2 wizard inputs.
+ * Mirrors the BE `LessonPlanGenerateRequest`; built from `LessonDetailsData` +
+ * `CompetenciesData` at submit time.
+ */
+export interface LessonPlanGenerateRequest {
+  lessonTitle: string
+  gradeLevel: string
+  learningArea: string
+  term: string
+  week: string
+  teacherName: string
+  section: string
+  sessions: number
+  minutesPerSession: number
+  references: string[]
+  aiDeclaration: string
+  competencies: string[]
+  additionalInstructions: string
+}
+
+/** List-row view of a saved plan (dashboard cards). Mirrors BE `LessonPlanSummary`. */
+export interface LessonPlanSummary {
+  id: string
+  /** ISO-8601 timestamp from the backend. */
+  createdAt: string
+  title: string
+  learningAreas: string
+  gradeLevelAndSection: string
+  sessionsLabel: string
+  providerUsed: ProviderId
+  /** Count of "[Teacher to complete]" cells — drives the card's placeholder badge. */
+  placeholderCount: number
+}
+
+/**
+ * Full saved-plan view — returned by `POST /lesson-plans` and `GET /lesson-plans/{id}`.
+ * The renderable plan lives under `plan`; the FE keys/navigates by `id`.
+ */
+export interface LessonPlanDetail {
+  id: string
+  createdAt: string
+  providerUsed: ProviderId
+  plan: GeneratedLessonPlan
+}

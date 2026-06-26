@@ -21,6 +21,11 @@ interface StepReviewProps {
   onBack: () => void
   onGenerate: () => void
   isGenerating: boolean
+  /**
+   * When present, generation is blocked (e.g. the active AI provider has no key):
+   * the node is rendered as an amber notice and the Generate button is disabled.
+   */
+  blockedNotice?: ReactNode
 }
 
 interface SummaryRowProps {
@@ -54,6 +59,7 @@ export function StepReview({
   onBack,
   onGenerate,
   isGenerating,
+  blockedNotice,
 }: StepReviewProps) {
   const [agreed, setAgreed] = useState(false)
 
@@ -223,6 +229,16 @@ export function StepReview({
         </Label>
       </div>
 
+      {/* Provider-not-configured notice (amber "needs attention") */}
+      {blockedNotice && (
+        <aside
+          className="rounded-lg border border-accent/40 bg-accent/15 px-4 py-3 text-sm text-accent-foreground"
+          role="status"
+        >
+          {blockedNotice}
+        </aside>
+      )}
+
       {/* Footer */}
       <div className="flex items-center justify-between pt-2">
         <Button variant="outline" onClick={onBack}>
@@ -230,10 +246,10 @@ export function StepReview({
         </Button>
         <Button
           onClick={onGenerate}
-          disabled={!agreed}
+          disabled={!agreed || !!blockedNotice}
           className={cn(
             "gap-2",
-            !agreed && "opacity-50 cursor-not-allowed"
+            (!agreed || !!blockedNotice) && "opacity-50 cursor-not-allowed"
           )}
         >
           Generate Lesson Plan

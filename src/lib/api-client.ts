@@ -23,7 +23,11 @@ api.interceptors.response.use(
     return response.data;
   },
   (error) => {
-    const message = error.response?.data?.message || error.message;
+    // FastAPI/AppException return `{ detail }`; fall back to `message` then the raw error.
+    const message =
+      error.response?.data?.detail ||
+      error.response?.data?.message ||
+      error.message;
     useNotifications.getState().addNotification({
       type: 'error',
       title: 'Error',
