@@ -19,13 +19,17 @@ before the backend row is created. The authenticated app area is enabled —
 wizard, `/plans/:id` ([src/app/routes/app/plan-detail.tsx](src/app/routes/app/plan-detail.tsx))
 shows a saved plan (reusing `StepResult`), and `/settings`
 ([src/app/routes/app/settings.tsx](src/app/routes/app/settings.tsx),
-reachable from the user menu in DashboardNav) hosts user configuration — its first
-section, AI-provider API keys (Grok/Gemini), lives in
-[src/features/settings/](src/features/settings/) and persists to the **backend** via
+reachable from the user menu in DashboardNav) hosts user configuration — two sections:
+(1) **School Information** ([src/features/settings/components/school-info-section.tsx](src/features/settings/components/school-info-section.tsx))
+lets teachers save their DepEd school header fields (school name, region, division, district,
+address) via `PATCH /auth/user` (`useUpdateProfile` in
+[src/features/settings/api/use-update-profile.ts](src/features/settings/api/use-update-profile.ts));
+these populate the header block in exported DOCX lesson plans. (2) **AI Provider API Keys** (Grok/Gemini)
+live in [src/features/settings/](src/features/settings/) and persist via
 `GET`/`PATCH /settings/provider-keys` (masked/write-only — the raw key is never returned,
 only a ``configured`` flag and masked preview).
 
-**Lesson-plan generation (live end-to-end):** the `/generate` wizard now calls the real
+**Lesson-plan generation + export (live end-to-end):** the `/generate` wizard calls the real
 `POST /lesson-plans` endpoint via `useGenerateLessonPlan`
 ([src/features/generate/api/use-generate-lesson-plan.ts](src/features/generate/api/use-generate-lesson-plan.ts));
 the former local `mock-generator.ts` is removed. Before generating, the review step is gated on
@@ -35,7 +39,14 @@ the active provider having a key configured (reads `useProviderKeys`; shows an a
 `useLessonPlans` and supports open (→ `/plans/:id`) and delete (`useDeleteLessonPlan`); list/detail/
 delete hooks live in [src/features/generate/api/use-lesson-plans.ts](src/features/generate/api/use-lesson-plans.ts).
 The `/lesson-plans` request/record types sit in
-[src/features/generate/types.ts](src/features/generate/types.ts). The shared Axios error
+[src/features/generate/types.ts](src/features/generate/types.ts). **DOCX export** is available via
+the "Export DOCX" button in `StepResult` — it calls `useExportLessonPlan`
+([src/features/generate/api/use-export-lesson-plan.ts](src/features/generate/api/use-export-lesson-plan.ts)),
+which POSTs the current on-screen draft (incl. local edits) to `POST /lesson-plans/{id}/export` with
+`responseType: "blob"` and triggers a browser download. `StepResult` now requires a `planId` prop
+(threaded from `generate.tsx` via the generate response `id`, and from `plan-detail.tsx` via `data.id`).
+The `User` type ([src/types/api.ts](src/types/api.ts)) now includes five school fields
+(`schoolName`, `region`, `division`, `district`, `schoolAddress`). The shared Axios error
 interceptor now surfaces FastAPI's `detail` field (then `message`). The hooks
 ([src/features/settings/api/use-api-keys.ts](src/features/settings/api/use-api-keys.ts))
 use TanStack Query v5 (`useProviderKeys` / `useUpdateProviderKeys`) over the shared Axios
