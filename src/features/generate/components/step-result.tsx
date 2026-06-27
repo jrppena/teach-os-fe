@@ -7,13 +7,14 @@
 
 import { useState } from "react"
 import type { ReactNode } from "react"
-import { Check, Download, FileText, Pencil } from "lucide-react"
+import { Check, Download, FileText, Loader2, Pencil } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { useExportLessonPlan } from "@/features/generate/api/use-export-lesson-plan"
 import {
   ROW_GUIDANCE,
   TEACHER_TODO_PREFIX,
@@ -23,6 +24,8 @@ import {
 } from "../types"
 
 interface StepResultProps {
+  /** The plan id stored in the DB — required to validate ownership on export. */
+  planId: string
   plan: GeneratedLessonPlan
   onBackToDashboard: () => void
 }
@@ -47,9 +50,10 @@ function setIn<T>(arr: T[], i: number, value: T): T[] {
  * @param onBackToDashboard - Returns the user to the dashboard.
  * @returns The lesson-plan document (read-only or editable) with one column per session.
  */
-export function StepResult({ plan, onBackToDashboard }: StepResultProps) {
+export function StepResult({ planId, plan, onBackToDashboard }: StepResultProps) {
   const [draft, setDraft] = useState<GeneratedLessonPlan>(plan)
   const [editing, setEditing] = useState(false)
+  const exportDocx = useExportLessonPlan()
 
   const sessionCount = draft.sessionLabels.length
   const info = draft.lessonInformation
@@ -116,8 +120,17 @@ export function StepResult({ plan, onBackToDashboard }: StepResultProps) {
               Edit
             </Button>
           )}
-          <Button variant="outline" size="sm" disabled title="Export coming soon">
-            <FileText data-icon="inline-start" />
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={exportDocx.isPending}
+            onClick={() => exportDocx.mutate({ planId, plan: draft })}
+          >
+            {exportDocx.isPending ? (
+              <Loader2 data-icon="inline-start" className="animate-spin" />
+            ) : (
+              <FileText data-icon="inline-start" />
+            )}
             Export DOCX
           </Button>
           <Button variant="outline" size="sm" disabled title="Export coming soon">

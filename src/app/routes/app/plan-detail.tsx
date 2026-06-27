@@ -49,7 +49,7 @@ export default function PlanDetailPage() {
         )}
 
         {!isLoading && data && (
-          <StepResult plan={data.plan} onBackToDashboard={backToDashboard} />
+          <StepResult planId={data.id} plan={data.plan} onBackToDashboard={backToDashboard} />
         )}
     </AppPageLayout>
   )

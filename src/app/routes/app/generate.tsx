@@ -72,6 +72,7 @@ const STEP_TITLES = [
 export default function GeneratePage() {
   const navigate = useNavigate()
   const [step, setStep] = useState(1)
+  const [planId, setPlanId] = useState<string | null>(null)
   const [plan, setPlan] = useState<GeneratedLessonPlan | null>(null)
 
   const generate = useGenerateLessonPlan()
@@ -117,6 +118,7 @@ export default function GeneratePage() {
   const handleGenerate = () => {
     generate.mutate(toRequest(), {
       onSuccess: (detail) => {
+        setPlanId(detail.id)
         setPlan(detail.plan)
         setStep(4)
       },
@@ -196,8 +198,9 @@ export default function GeneratePage() {
                 blockedNotice={blockedNotice}
               />
             )}
-            {step === 4 && plan && (
+            {step === 4 && plan && planId && (
               <StepResult
+                planId={planId}
                 plan={plan}
                 onBackToDashboard={() => navigate(paths.app.dashboard.getHref())}
               />
