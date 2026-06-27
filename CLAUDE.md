@@ -32,7 +32,19 @@ only a ``configured`` flag and masked preview).
 **Lesson-plan generation + export (live end-to-end):** the `/generate` wizard calls the real
 `POST /lesson-plans` endpoint via `useGenerateLessonPlan`
 ([src/features/generate/api/use-generate-lesson-plan.ts](src/features/generate/api/use-generate-lesson-plan.ts));
-the former local `mock-generator.ts` is removed. Before generating, the review step is gated on
+the former local `mock-generator.ts` is removed. **Grade levels and subjects are now DB-backed**
+(no longer hardcoded in [step-lesson-details.tsx](src/features/generate/components/step-lesson-details.tsx)):
+`useGradeLevels` / `useSubjects` ([src/features/generate/api/use-curriculum.ts](src/features/generate/api/use-curriculum.ts))
+fetch `GET /curriculum/grade-levels` and `/curriculum/grade-levels/{code}/subjects`
+(TanStack Query, `staleTime: Infinity`). Step 1 populates the Grade Level dropdown from the API
+(Grade 1-12), then loads that grade's subjects on demand (subject select is disabled until a grade
+is picked, and clears when the grade changes). SHS subjects are grouped by track → cluster → subjects:
+a "Core Subjects" group, then per track a track-level `SelectGroup` header containing nested cluster
+`SelectGroup`s with their elective subjects as `SelectItem`s. K-10 subjects render as a flat list.
+The request/lesson-plan contract field is still called `learningArea` (unchanged); only the visible
+Step 1 label reads "Subject" and the Step 3 review reads "Subject". `GradeLevel` / `Subject` types
+live in [src/features/generate/types.ts](src/features/generate/types.ts); `Subject` carries a
+nullable `cluster: { id; name; track }` field. Before generating, the review step is gated on
 the active provider having a key configured (reads `useProviderKeys`; shows an amber
 "Add one in Settings" notice and disables Generate otherwise). The dashboard
 ([src/app/routes/app/dashboard.tsx](src/app/routes/app/dashboard.tsx)) lists saved plans via
