@@ -11,7 +11,7 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router"
 
-import { DashboardNav } from "@/components/layouts/dashboard-nav"
+import { AppPageLayout } from "@/components/layouts/app-page-layout"
 import {
   Card,
   CardContent,
@@ -144,12 +144,7 @@ export default function GeneratePage() {
   const stepInfo = STEP_TITLES[step - 1]
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardNav />
-
-      {/* Match DashboardNav's inner container (max-w-7xl + px-4) so the content's
-          left/right edges line up with the nav's logo and avatar on every step. */}
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
+    <AppPageLayout>
         {/* Page heading */}
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-semibold text-foreground tracking-tight">
@@ -214,7 +209,6 @@ export default function GeneratePage() {
         <p className="mt-4 text-center text-xs text-muted-foreground sm:hidden">
           Step {step} of 4 — {stepInfo.title}
         </p>
-      </main>
-    </div>
+    </AppPageLayout>
   )
 }

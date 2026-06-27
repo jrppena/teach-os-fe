@@ -33,8 +33,8 @@ import { cn } from "@/lib/utils"
 // Center navigation entries. `to` is matched against the current path to mark
 // the active item; entries without a route are placeholders for upcoming areas.
 const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, to: paths.app.root.getHref() },
-  { label: "My Lesson Plans", icon: FileText, to: paths.app.generate.getHref() },
+  { label: "My Lesson Plans", icon: LayoutDashboard, to: paths.app.root.getHref() },
+  { label: "Lesson Plan Generation", icon: FileText, to: paths.app.generate.getHref() },
   { label: "Resources", icon: BookOpen, to: undefined },
 ] as const
 

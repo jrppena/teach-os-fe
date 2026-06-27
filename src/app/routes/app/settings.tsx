@@ -6,7 +6,7 @@
  * standalone with its own <DashboardNav/> (no /app shell), matching /generate.
  */
 
-import { DashboardNav } from "@/components/layouts/dashboard-nav"
+import { AppPageLayout } from "@/components/layouts/app-page-layout"
 import { BRAND } from "@/config/branding"
 import {
   Card,
@@ -24,10 +24,7 @@ import { ApiKeysSection } from "@/features/settings/components/api-keys-section"
  */
 export default function SettingsPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardNav />
-
-      <main className="mx-auto max-w-2xl px-4 py-10 sm:py-14">
+    <AppPageLayout maxWidth="max-w-2xl">
         {/* Page heading */}
         <div className="mb-8">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
@@ -53,7 +50,6 @@ export default function SettingsPage() {
             <ApiKeysSection />
           </CardContent>
         </Card>
-      </main>
-    </div>
+    </AppPageLayout>
   )
 }

@@ -8,16 +8,13 @@
 
 import { Outlet } from "react-router"
 
-import { DashboardNav } from "@/components/layouts/dashboard-nav"
+import { AppPageLayout } from "@/components/layouts/app-page-layout"
 
 export default function AppRoot() {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <DashboardNav />
-      <main className="flex-1 p-6">
-        <Outlet />
-      </main>
-    </div>
+    <AppPageLayout>
+      <Outlet />
+    </AppPageLayout>
   )
 }
 

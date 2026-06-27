@@ -53,7 +53,7 @@ export default function Dashboard() {
   const openPlan = (id: string) => navigate(paths.app.planDetail.getHref(id))
 
   return (
-    <div className="mx-auto max-w-7xl">
+    <>
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold text-foreground text-balance">
@@ -97,6 +97,6 @@ export default function Dashboard() {
           ))}
         </div>
       )}
-    </div>
+    </>
   )
 }

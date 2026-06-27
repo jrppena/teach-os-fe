@@ -10,7 +10,7 @@
 import { Loader2 } from "lucide-react"
 import { useNavigate, useParams } from "react-router"
 
-import { DashboardNav } from "@/components/layouts/dashboard-nav"
+import { AppPageLayout } from "@/components/layouts/app-page-layout"
 import { Button } from "@/components/ui/button"
 import { paths } from "@/config/paths"
 import { useLessonPlan } from "@/features/generate/api/use-lesson-plans"
@@ -30,9 +30,7 @@ export default function PlanDetailPage() {
   const backToDashboard = () => navigate(paths.app.dashboard.getHref())
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardNav />
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
+    <AppPageLayout>
         {isLoading && (
           <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
             <Loader2 className="size-8 animate-spin text-primary" />
@@ -53,7 +51,6 @@ export default function PlanDetailPage() {
         {!isLoading && data && (
           <StepResult plan={data.plan} onBackToDashboard={backToDashboard} />
         )}
-      </main>
-    </div>
+    </AppPageLayout>
   )
 }
