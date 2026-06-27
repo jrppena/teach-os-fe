@@ -1,9 +1,10 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Menu, X, BookOpen } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNavigate } from "react-router-dom"
+import { BrandLogo } from "@/components/brand/brand-logo"
 
 const navLinks = [
   { label: "Features", href: "#features" },
@@ -19,11 +20,8 @@ export function Navbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <a href="/" className="flex items-center gap-2 font-bold text-xl text-primary">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <BookOpen className="size-4" />
-            </div>
-            TeachOS
+          <a href="/">
+            <BrandLogo />
           </a>
 
           {/* Desktop nav */}

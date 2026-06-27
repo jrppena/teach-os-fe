@@ -33,6 +33,7 @@ import {
 import { StepReview } from "@/features/generate/components/step-review"
 import { StepResult } from "@/features/generate/components/step-result"
 import { useGenerateLessonPlan } from "@/features/generate/api/use-generate-lesson-plan"
+import { BRAND } from "@/config/branding"
 import type {
   GeneratedLessonPlan,
   LessonPlanGenerateRequest,
@@ -155,7 +156,7 @@ export default function GeneratePage() {
             Generate New Lesson Plan
           </h1>
           <p className="text-sm text-muted-foreground mt-1.5">
-            Answer a few questions and ILAW will draft a DepEd MATATAG-aligned lesson plan for you.
+            Answer a few questions and {BRAND.name} will draft a DepEd MATATAG-aligned lesson plan for you.
           </p>
         </div>
 

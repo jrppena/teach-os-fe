@@ -60,7 +60,7 @@ export function Features() {
             Everything you need for lesson planning
           </h2>
           <p className="mt-4 text-pretty text-lg text-muted-foreground leading-relaxed">
-            Purpose-built for the Filipino classroom, from generation to final document.
+            Purpose-built for the Filipino classroom, from generation to final document. More teacher tools are on the way.
           </p>
         </div>
 

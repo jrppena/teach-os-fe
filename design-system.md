@@ -1,8 +1,12 @@
-# ILAW Design System
+# TeachOS Design System
 
-The visual language for the **ILAW Lesson Plan Generator** — a DepEd MATATAG-compliant
-AI tool for Filipino teachers. Use this reference when building pages so components,
-color usage, and spacing stay consistent.
+The visual language for **TeachOS** — a platform for Filipino teachers, starting with
+a DepEd MATATAG-compliant ILAW-format lesson-plan generator. Use this reference when
+building pages so components, color usage, and spacing stay consistent.
+
+> **Note on ILAW:** ILAW is the DepEd/MATATAG lesson-plan *format* that TeachOS
+> generates. It is not the product name. Use "TeachOS" for the product; use
+> "ILAW-format" only when describing the lesson-plan document structure.
 
 Tokens live in [src/index.css](src/index.css); primitives in
 [src/components/ui/](src/components/ui/). Stack: React 19 + Vite, Tailwind CSS v4,
@@ -101,7 +105,7 @@ in [step-review.tsx](src/features/generate/components/step-review.tsx)).
 Implemented in
 [dashboard-nav.tsx](src/components/layouts/dashboard-nav.tsx); used by the `/app` shell.
 
-- **Logo:** 32×32 (`size-8`) blue `rounded-md` box with "IL" initials + wordmark beside it.
+- **Logo:** 32×32 (`size-8`) blue `rounded-lg` box with `BookOpen` icon + "TeachOS" wordmark beside it. Use the shared `<BrandLogo>` component ([src/components/brand/brand-logo.tsx](src/components/brand/brand-logo.tsx)).
 - **Nav items:** ghost buttons; active item uses `bg-primary/10 text-primary` (no underlines).
 - **User menu:** `Avatar` with initials fallback, name + email in the dropdown label,
   profile / settings / log out items.

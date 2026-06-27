@@ -122,7 +122,7 @@ export function ApiKeysSection() {
           Active provider
         </Label>
         <p className="text-xs text-muted-foreground">
-          The provider ILAW uses to generate your lesson plans.
+          The provider TeachOS uses to generate your lesson plans.
         </p>
         <Select
           value={activeProvider}

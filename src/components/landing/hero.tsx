@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
-import { CheckCircle2, FileText, Highlighter, Pencil } from "lucide-react"
+import { CheckCircle2 } from "lucide-react"
 import { LessonPlanMockup } from "@/components/landing/lesson-plan-mockup"
+import { BRAND } from "@/config/branding"
 
 export function Hero() {
   return (
@@ -22,16 +23,16 @@ export function Hero() {
             {/* Pill badge */}
             <div className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
               <span className="size-1.5 rounded-full bg-primary" />
-              Aligned with MATATAG &amp; DO 003 s. 2026
+              Built for Filipino teachers · Lesson planning, first
             </div>
 
             <h1 className="text-balance text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-[3.25rem]">
-              Lesson plans the ILAW way —{" "}
-              <span className="text-primary">generated in minutes</span>, refined by you.
+              The platform built for{" "}
+              <span className="text-primary">Filipino teachers</span> — starting with lesson plans.
             </h1>
 
             <p className="text-pretty text-lg leading-relaxed text-muted-foreground max-w-xl">
-              TeachOS turns grade level, subject, and competencies into an ILAW-format draft aligned with MATATAG and DO 003 s. 2026 — so you spend more time teaching, less time formatting.
+              {BRAND.name} turns grade level, subject, and competencies into an {BRAND.format}-format draft aligned with MATATAG and DO 003 s. 2026 — so you spend more time teaching, less time formatting.
             </p>
 
             {/* CTAs */}

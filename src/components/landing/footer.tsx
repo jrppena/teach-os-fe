@@ -1,5 +1,6 @@
 import { Separator } from "@/components/ui/separator/separator"
-import { BookOpen } from "lucide-react"
+import { BrandLogo } from "@/components/brand/brand-logo"
+import { BRAND } from "@/config/branding"
 
 const links = [
   { label: "Privacy", href: "#" },
@@ -14,14 +15,11 @@ export function Footer() {
         <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           {/* Brand */}
           <div className="flex flex-col gap-3 max-w-xs">
-            <a href="/" className="flex items-center gap-2 font-bold text-lg text-primary">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <BookOpen className="size-3.5" />
-              </div>
-              TeachOS
+            <a href="/">
+              <BrandLogo size="sm" />
             </a>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              AI-assisted lesson planning for Filipino teachers — ILAW-format drafts aligned with MATATAG and DO 003 s. 2026.
+              {BRAND.tagline} Lesson planning first — more tools for Filipino teachers coming soon.
             </p>
           </div>
 
@@ -46,9 +44,9 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="flex flex-col gap-2 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
-          <p>© {new Date().getFullYear()} TeachOS. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {BRAND.name}. All rights reserved.</p>
           <p className="max-w-md text-center md:text-right leading-relaxed">
-            TeachOS is an independent tool and is not officially affiliated with the Department of Education.
+            {BRAND.name} is an independent tool and is not officially affiliated with the Department of Education.
           </p>
         </div>
       </div>

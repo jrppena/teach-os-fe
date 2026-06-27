@@ -9,6 +9,7 @@
 
 import { useState } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { BRAND } from '@/config/branding';
 import { validatePassword, validateRequired } from '@/utils/validators';
 import { FormField } from '@/components/ui/form-field';
 import { Button } from '@/components/ui/button';
@@ -103,7 +104,7 @@ export function GoogleNameStep({
       <div className="mb-5">
         <h2 className="text-lg font-semibold text-foreground">Almost there!</h2>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Confirm your name and set a password to finish creating your ILAW account.
+          Confirm your name and set a password to finish creating your {BRAND.name} account.
         </p>
       </div>
 

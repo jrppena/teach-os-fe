@@ -1,5 +1,5 @@
-// Top navigation bar for the authenticated app area (ILAW "TopNav" pattern).
-// Renders the ILAW logo/wordmark, a centered role-based nav, and a user avatar
+// Top navigation bar for the authenticated app area (TeachOS TopNav pattern).
+// Renders the TeachOS logo/wordmark, a centered role-based nav, and a user avatar
 // with a dropdown (profile / settings / log out). Used by the /app shell and by
 // standalone authenticated pages (e.g. the /generate flow).
 
@@ -12,6 +12,7 @@ import {
   Settings,
   User as UserIcon,
 } from "lucide-react"
+import { BrandLogo } from "@/components/brand/brand-logo"
 import { useLocation, useNavigate } from "react-router"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -45,7 +46,7 @@ function initials(firstName?: string, lastName?: string) {
 }
 
 /**
- * Sticky dashboard header following the ILAW TopNav pattern.
+ * Sticky dashboard header following the TeachOS TopNav pattern.
  *
  * Reads the current user via `useUser` and signs out via `useLogout`, redirecting
  * to the login page on success. Assumes an authenticated context (rendered under
@@ -76,19 +77,9 @@ export function DashboardNav() {
         <button
           type="button"
           onClick={() => navigate(paths.app.root.getHref())}
-          className="flex shrink-0 items-center gap-2"
+          className="flex shrink-0 items-center"
         >
-          <div className="flex size-8 items-center justify-center rounded-md bg-primary">
-            <span className="text-xs font-bold tracking-tight text-primary-foreground">
-              IL
-            </span>
-          </div>
-          <span className="text-sm font-semibold tracking-tight text-foreground">
-            ILAW{" "}
-            <span className="hidden font-normal text-muted-foreground sm:inline">
-              Lesson Plan Generator
-            </span>
-          </span>
+          <BrandLogo />
         </button>
 
         {/* Center nav */}

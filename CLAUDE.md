@@ -1,7 +1,9 @@
 <project-context>
 
-**Purpose:** `teacher-os-fe` is the web frontend for Teacher OS, a SaaS product for
-teachers (e.g. lesson planning). The marketing landing page and authentication flows
+**Purpose:** `teacher-os-fe` is the web frontend for **TeachOS** — a platform for
+Filipino teachers. The product brand is **TeachOS** everywhere in UI and copy. **ILAW**
+is the DepEd/MATATAG lesson-plan *format* that TeachOS generates; it is not the product
+name. The MVP feature is ILAW-format lesson-plan generation. The marketing landing page and authentication flows
 are implemented and **live end-to-end**: the login/register forms
 ([src/features/auth/components/](src/features/auth/components/)) are wired to the
 `useLogin`/`useRegister` hooks (email/password) **and** to dedicated Google OAuth
@@ -40,10 +42,13 @@ use TanStack Query v5 (`useProviderKeys` / `useUpdateProviderKeys`) over the sha
 client. No `localStorage` is used for keys. Registration has **no team concept**.
 Discussions/users/profile routes are intentionally not built yet.
 
-**Design system:** the app follows the **ILAW Design System** — deep-blue primary, amber
-accent reserved for "needs attention"/placeholder UI only, 8px (`rounded-lg`) canonical
-radius. Tokens live in [src/index.css](src/index.css); the full reference (palette,
-typography, badge/status patterns, TopNav) is in [design-system.md](design-system.md) —
+**Design system:** the app follows the **TeachOS Design System** — deep-blue primary,
+amber accent reserved for "needs attention"/placeholder UI only, 8px (`rounded-lg`)
+canonical radius. Brand name and tagline are centralised in
+[src/config/branding.ts](src/config/branding.ts); the shared logo mark is
+[src/components/brand/brand-logo.tsx](src/components/brand/brand-logo.tsx). Tokens live
+in [src/index.css](src/index.css); the full reference (palette, typography,
+badge/status patterns, TopNav) is in [design-system.md](design-system.md) —
 **read it before building or restyling UI.**
 
 **Tech stack:**

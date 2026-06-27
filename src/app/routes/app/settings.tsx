@@ -7,6 +7,7 @@
  */
 
 import { DashboardNav } from "@/components/layouts/dashboard-nav"
+import { BRAND } from "@/config/branding"
 import {
   Card,
   CardContent,
@@ -33,7 +34,7 @@ export default function SettingsPage() {
             Settings
           </h1>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            Manage how ILAW connects to AI providers to generate your lesson plans.
+            Manage how {BRAND.name} connects to AI providers to generate your lesson plans.
           </p>
         </div>
 
@@ -44,7 +45,7 @@ export default function SettingsPage() {
               AI Provider API Keys
             </CardTitle>
             <CardDescription className="text-sm">
-              Add your own provider key and pick which one ILAW should use. Keys
+              Add your own provider key and pick which one {BRAND.name} should use. Keys
               are securely stored on your account.
             </CardDescription>
           </CardHeader>
