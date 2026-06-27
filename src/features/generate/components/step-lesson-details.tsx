@@ -1,5 +1,5 @@
 // Step 1 of the lesson-plan generator: Lesson Information.
-// Captures the ILAW "Lesson Information" block — lesson title, learning area,
+// Captures the ILAW "Lesson Information" block — lesson title, subject,
 // teacher, grade level & section, number/length of sessions, references, and the
 // Declaration of AI Use — then gates "Next" on the required fields.
 
@@ -11,12 +11,19 @@ import { Textarea } from "@/components/ui/textarea"
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import {
+  useGradeLevels,
+  useSubjects,
+} from "@/features/generate/api/use-curriculum"
+import type { Subject } from "@/features/generate/types"
 
 export interface LessonDetailsData {
   lessonTitle: string
@@ -37,26 +44,6 @@ interface StepLessonDetailsProps {
   onChange: (data: LessonDetailsData) => void
   onNext: () => void
 }
-
-const GRADE_OPTIONS = [
-  "Grade 7", "Grade 8", "Grade 9",
-  "Grade 10", "Grade 11", "Grade 12",
-]
-
-const LEARNING_AREAS = [
-  "Araling Panlipunan",
-  "Earth Science",
-  "English",
-  "Filipino",
-  "Finite Mathematics",
-  "General Mathematics",
-  "Physical Education & Health",
-  "Practical Research 1",
-  "Practical Research 2",
-  "Science",
-  "Technology & Livelihood Education (TLE)",
-  "Values Education (EsP)",
-]
 
 const TERM_OPTIONS = [
   "Quarter 1", "Quarter 2", "Quarter 3", "Quarter 4",
@@ -85,6 +72,42 @@ export const DEFAULT_AI_DECLARATION =
 export function StepLessonDetails({ data, onChange, onNext }: StepLessonDetailsProps) {
   const set = <K extends keyof LessonDetailsData>(key: K, value: LessonDetailsData[K]) =>
     onChange({ ...data, [key]: value })
+
+  // Curriculum reference data (DB-backed). The subject list depends on the
+  // selected grade — resolve the grade's code from its display name to fetch it.
+  const { data: gradeLevels = [], isLoading: gradesLoading } = useGradeLevels()
+  const selectedGrade = gradeLevels.find((g) => g.name === data.gradeLevel)
+  const { data: subjects = [], isLoading: subjectsLoading } = useSubjects(
+    selectedGrade?.code,
+  )
+
+  // Separate core subjects from electives; group electives by track → cluster.
+  const coreSubjects = subjects.filter((s) => s.cluster === null)
+  const electroSubjects = subjects.filter((s) => s.cluster !== null)
+
+  // Build an ordered map: track → cluster-name → subjects.
+  // We preserve the cluster order_index ordering that the API already applies.
+  const clusterMap = new Map<string, { track: string; subjects: Subject[] }>()
+  for (const subject of electroSubjects) {
+    const clusterName = subject.cluster!.name
+    if (!clusterMap.has(clusterName)) {
+      clusterMap.set(clusterName, { track: subject.cluster!.track, subjects: [] })
+    }
+    clusterMap.get(clusterName)!.subjects.push(subject)
+  }
+
+  // Track-level groups in display order: Academic first, then TechPro.
+  const academicClusters = [...clusterMap.entries()].filter(
+    ([, v]) => v.track === "ACADEMIC",
+  )
+  const techProClusters = [...clusterMap.entries()].filter(
+    ([, v]) => v.track === "TECHPRO",
+  )
+  const hasClusters = clusterMap.size > 0
+
+  // Changing the grade clears the chosen subject, since subjects differ per grade.
+  const onGradeChange = (gradeName: string) =>
+    onChange({ ...data, gradeLevel: gradeName, learningArea: "" })
 
   const setReference = (index: number, value: string) => {
     const updated = [...data.references]
@@ -128,31 +151,100 @@ export function StepLessonDetails({ data, onChange, onNext }: StepLessonDetailsP
           <Label htmlFor="gradeLevel">
             Grade Level <span className="text-destructive" aria-hidden="true">*</span>
           </Label>
-          <Select value={data.gradeLevel} onValueChange={(v) => set("gradeLevel", v)}>
+          <Select
+            value={data.gradeLevel}
+            onValueChange={onGradeChange}
+            disabled={gradesLoading}
+          >
             <SelectTrigger id="gradeLevel" className="w-full" aria-required="true">
-              <SelectValue placeholder="Select grade" />
+              <SelectValue placeholder={gradesLoading ? "Loading grades…" : "Select grade"} />
             </SelectTrigger>
             <SelectContent>
-              {GRADE_OPTIONS.map((g) => (
-                <SelectItem key={g} value={g}>{g}</SelectItem>
+              {gradeLevels.map((g) => (
+                <SelectItem key={g.code} value={g.name}>{g.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        {/* Learning Area */}
+        {/* Subject */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="learningArea">
-            Learning Area <span className="text-destructive" aria-hidden="true">*</span>
+            Subject <span className="text-destructive" aria-hidden="true">*</span>
           </Label>
-          <Select value={data.learningArea} onValueChange={(v) => set("learningArea", v)}>
+          <Select
+            value={data.learningArea}
+            onValueChange={(v) => set("learningArea", v)}
+            disabled={!selectedGrade || subjectsLoading}
+          >
             <SelectTrigger id="learningArea" className="w-full" aria-required="true">
-              <SelectValue placeholder="Select subject" />
+              <SelectValue
+                placeholder={
+                  !selectedGrade
+                    ? "Select grade first"
+                    : subjectsLoading
+                      ? "Loading subjects…"
+                      : "Select subject"
+                }
+              />
             </SelectTrigger>
             <SelectContent>
-              {LEARNING_AREAS.map((a) => (
-                <SelectItem key={a} value={a}>{a}</SelectItem>
-              ))}
+              {hasClusters ? (
+                <>
+                  {/* Core subjects (no cluster) */}
+                  {coreSubjects.length > 0 && (
+                    <SelectGroup>
+                      <SelectLabel>Core Subjects</SelectLabel>
+                      {coreSubjects.map((s) => (
+                        <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  )}
+
+                  {/* Academic track clusters */}
+                  {academicClusters.length > 0 && (
+                    <SelectGroup>
+                      <SelectLabel>Academic Track</SelectLabel>
+                      {academicClusters.map(([clusterName, { subjects: clusterSubjects }]) => (
+                        <SelectGroup key={clusterName}>
+                          <SelectLabel className="pl-4 text-xs font-normal italic text-muted-foreground">
+                            {clusterName}
+                          </SelectLabel>
+                          {clusterSubjects.map((s) => (
+                            <SelectItem key={s.id} value={s.name} className="pl-6">
+                              {s.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      ))}
+                    </SelectGroup>
+                  )}
+
+                  {/* Technical-Professional track clusters */}
+                  {techProClusters.length > 0 && (
+                    <SelectGroup>
+                      <SelectLabel>Technical-Professional Track</SelectLabel>
+                      {techProClusters.map(([clusterName, { subjects: clusterSubjects }]) => (
+                        <SelectGroup key={clusterName}>
+                          <SelectLabel className="pl-4 text-xs font-normal italic text-muted-foreground">
+                            {clusterName}
+                          </SelectLabel>
+                          {clusterSubjects.map((s) => (
+                            <SelectItem key={s.id} value={s.name} className="pl-6">
+                              {s.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      ))}
+                    </SelectGroup>
+                  )}
+                </>
+              ) : (
+                /* K-10: flat subject list */
+                subjects.map((s) => (
+                  <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>

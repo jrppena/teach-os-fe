@@ -125,6 +125,39 @@ export interface LessonPlanGenerateRequest {
   additionalInstructions: string
 }
 
+// ── Curriculum reference data (camelCase, mirrors the BE `/curriculum` schemas) ──
+
+/** Strengthened-SHS track for a cluster; null for K-10 and SHS core subjects. */
+export type Track = "ACADEMIC" | "TECHPRO"
+
+/**
+ * A DepEd grade level — a row from `GET /curriculum/grade-levels`.
+ * `code` (e.g. "GRADE_7") is the stable id used to fetch the grade's subjects;
+ * `name` (e.g. "Grade 7") is the display label and the value submitted to the backend.
+ */
+export interface GradeLevel {
+  id: string
+  code: string
+  name: string
+  /** "MATATAG" (Grades 1-10) or "Strengthened SHS" (Grades 11-12). */
+  curriculum: string
+  orderIndex: number
+}
+
+/**
+ * A subject offered at a grade level — a row from
+ * `GET /curriculum/grade-levels/{code}/subjects`. `name` is the value submitted to
+ * the backend; `cluster` groups SHS electives in the dropdown (null for K-10 + core).
+ */
+export interface Subject {
+  id: string
+  name: string
+  category: "CORE" | "ELECTIVE"
+  /** Present for SHS elective subjects; null for K-10 and SHS core subjects. */
+  cluster: { id: string; name: string; track: Track } | null
+  orderIndex: number
+}
+
 /** List-row view of a saved plan (dashboard cards). Mirrors BE `LessonPlanSummary`. */
 export interface LessonPlanSummary {
   id: string

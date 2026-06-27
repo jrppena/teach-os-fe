@@ -102,7 +102,7 @@ export function StepReview({
             <Separator />
             <SummaryRow label="Grade Level" value={details.gradeLevel} />
             <Separator />
-            <SummaryRow label="Learning Area" value={details.learningArea} />
+            <SummaryRow label="Subject" value={details.learningArea} />
             <Separator />
             <SummaryRow label="Term / Quarter" value={details.term} />
             <Separator />
