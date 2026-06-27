@@ -1,8 +1,6 @@
-import { useNavigate } from 'react-router';
-
-
+// import { useNavigate } from 'react-router';
 // import { paths } from '@/config/paths';
-import { useUser } from '@/lib/auth';
+// import { useUser } from '@/lib/auth';
 import { Navbar } from '@/components/landing/navbar';
 import { Hero, HowItWorks, Features, Compliance, Testimonials, FinalCTA, Footer } from '@/components/landing';
 

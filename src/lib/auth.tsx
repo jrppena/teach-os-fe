@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // Authentication utilities: Firebase Auth integration, react-query-auth config,
 // validation schemas, route guards (ProtectedRoute / PublicRoute), and Google
 // OAuth primitives (googleLogin, googleSignupStart, googleSignupComplete, cancelGoogleSignup).
@@ -206,7 +207,7 @@ function getFirebaseErrorMessage(error: unknown): string {
     return 'An unexpected error occurred';
   }
 
-  const code = (error as any)?.code;
+  const code = (error as { code?: string })?.code;
 
   const errorMap: Record<string, string> = {
     'auth/user-not-found': 'Email not found',
@@ -224,7 +225,7 @@ function getFirebaseErrorMessage(error: unknown): string {
       'Invalid email or password. If you signed in with Google, use "Sign in with Google" instead.',
   };
 
-  return errorMap[code] ?? error.message ?? 'An error occurred';
+  return (code ? errorMap[code] : undefined) ?? error.message ?? 'An error occurred';
 }
 
 // ============================================================================
@@ -251,7 +252,7 @@ export const googleLogin = async (): Promise<User> => {
     return await getUserFromAPI(result.user.uid);
   } catch (error) {
     // Re-throw our own Error instances unchanged; map Firebase codes for others.
-    if (error instanceof Error && !(error as any).code) throw error;
+    if (error instanceof Error && !(error as { code?: string }).code) throw error;
     throw new Error(getFirebaseErrorMessage(error), { cause: error });
   }
 };
@@ -291,7 +292,7 @@ export const googleSignupStart = async (): Promise<GoogleSignupStartResult> => {
 
     return { isNewUser: true, prefill: { firstName, lastName }, user: null };
   } catch (error) {
-    if (error instanceof Error && !(error as any).code) throw error;
+    if (error instanceof Error && !(error as { code?: string }).code) throw error;
     throw new Error(getFirebaseErrorMessage(error), { cause: error });
   }
 };
@@ -331,7 +332,7 @@ export const googleSignupComplete = async (
 
     return user;
   } catch (error) {
-    if (error instanceof Error && !(error as any).code) throw error;
+    if (error instanceof Error && !(error as { code?: string }).code) throw error;
     throw new Error(getFirebaseErrorMessage(error), { cause: error });
   }
 };

@@ -1,6 +1,7 @@
 import { QueryClient, useQueryClient } from '@tanstack/react-query';
-import { lazy, useMemo } from 'react';
+import React, { lazy, useMemo } from 'react';
 import { createBrowserRouter, Outlet } from 'react-router';
+import type { ActionFunction, LoaderFunction } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 
 import { paths } from '@/config/paths';
@@ -13,7 +14,14 @@ import {
 
 const AuthPage = lazy(() => import('@/app/routes/auth/auth'));
 
-const convert = (queryClient: QueryClient) => (m: any) => {
+type RouteModule = {
+  clientLoader?: (qc: QueryClient) => LoaderFunction;
+  clientAction?: (qc: QueryClient) => ActionFunction;
+  default: React.ComponentType;
+  [key: string]: unknown;
+};
+
+const convert = (queryClient: QueryClient) => (m: RouteModule) => {
   const { clientLoader, clientAction, default: Component, ...rest } = m;
   return {
     ...rest,
@@ -23,6 +31,7 @@ const convert = (queryClient: QueryClient) => (m: any) => {
   };
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const createAppRouter = (queryClient: QueryClient) =>
   createBrowserRouter([
     {

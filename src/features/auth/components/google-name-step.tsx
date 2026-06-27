@@ -30,6 +30,27 @@ interface GoogleNameStepProps {
 const validateFirstName = validateRequired('First name');
 const validateLastName = validateRequired('Last name');
 
+function ToggleButton({
+  show,
+  onToggle,
+  label,
+}: {
+  show: boolean;
+  onToggle: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      className="text-muted-foreground hover:text-foreground transition-colors"
+      onClick={onToggle}
+    >
+      {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+    </button>
+  );
+}
+
 /**
  * Name-prompt + password step rendered inline within the auth Card.
  * @param prefill    - Google-sourced first/last name pre-fill values.
@@ -79,25 +100,6 @@ export function GoogleNameStep({
     if (Object.keys(newErrors).length > 0) return;
     onComplete(firstName, lastName, password);
   };
-
-  const ToggleButton = ({
-    show,
-    onToggle,
-    label,
-  }: {
-    show: boolean;
-    onToggle: () => void;
-    label: string;
-  }) => (
-    <button
-      type="button"
-      aria-label={label}
-      className="text-muted-foreground hover:text-foreground transition-colors"
-      onClick={onToggle}
-    >
-      {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-    </button>
-  );
 
   return (
     <div>
