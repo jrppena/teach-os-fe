@@ -39,12 +39,15 @@ the active provider having a key configured (reads `useProviderKeys`; shows an a
 `useLessonPlans` and supports open (→ `/plans/:id`) and delete (`useDeleteLessonPlan`); list/detail/
 delete hooks live in [src/features/generate/api/use-lesson-plans.ts](src/features/generate/api/use-lesson-plans.ts).
 The `/lesson-plans` request/record types sit in
-[src/features/generate/types.ts](src/features/generate/types.ts). **DOCX export** is available via
-the "Export DOCX" button in `StepResult` — it calls `useExportLessonPlan`
+[src/features/generate/types.ts](src/features/generate/types.ts). **DOCX and PDF export** are both available via buttons in `StepResult`. Both call
+`useExportLessonPlan(format)` from
 ([src/features/generate/api/use-export-lesson-plan.ts](src/features/generate/api/use-export-lesson-plan.ts)),
-which POSTs the current on-screen draft (incl. local edits) to `POST /lesson-plans/{id}/export` with
-`responseType: "blob"` and triggers a browser download. `StepResult` now requires a `planId` prop
-(threaded from `generate.tsx` via the generate response `id`, and from `plan-detail.tsx` via `data.id`).
+which accepts `format: "docx" | "pdf"` (default `"docx"`). DOCX POSTs to
+`POST /lesson-plans/{id}/export`; PDF POSTs to `POST /lesson-plans/{id}/export/pdf`. Both
+use `responseType: "blob"` and trigger a browser download (`.docx` / `.pdf` extension). `StepResult`
+instantiates two separate mutation hooks (`exportDocx` / `exportPdf`) so each has its own pending
+state. `StepResult` requires a `planId` prop (threaded from `generate.tsx` via the generate response
+`id`, and from `plan-detail.tsx` via `data.id`).
 The `User` type ([src/types/api.ts](src/types/api.ts)) now includes five school fields
 (`schoolName`, `region`, `division`, `district`, `schoolAddress`). The shared Axios error
 interceptor now surfaces FastAPI's `detail` field (then `message`). The hooks

@@ -53,7 +53,8 @@ function setIn<T>(arr: T[], i: number, value: T): T[] {
 export function StepResult({ planId, plan, onBackToDashboard }: StepResultProps) {
   const [draft, setDraft] = useState<GeneratedLessonPlan>(plan)
   const [editing, setEditing] = useState(false)
-  const exportDocx = useExportLessonPlan()
+  const exportDocx = useExportLessonPlan("docx")
+  const exportPdf = useExportLessonPlan("pdf")
 
   const sessionCount = draft.sessionLabels.length
   const info = draft.lessonInformation
@@ -133,8 +134,17 @@ export function StepResult({ planId, plan, onBackToDashboard }: StepResultProps)
             )}
             Export DOCX
           </Button>
-          <Button variant="outline" size="sm" disabled title="Export coming soon">
-            <Download data-icon="inline-start" />
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={exportPdf.isPending}
+            onClick={() => exportPdf.mutate({ planId, plan: draft })}
+          >
+            {exportPdf.isPending ? (
+              <Loader2 data-icon="inline-start" className="animate-spin" />
+            ) : (
+              <Download data-icon="inline-start" />
+            )}
             Export PDF
           </Button>
         </div>
