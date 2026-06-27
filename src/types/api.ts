@@ -19,5 +19,11 @@ export type BaseEntity = {
     email: string;
     role: 'ADMIN' | 'USER';
     bio: string;
+    // DepEd school header fields — used to populate the DOCX export header block.
+    schoolName: string;
+    region: string;
+    division: string;
+    district: string;
+    schoolAddress: string;
   }>;
   
