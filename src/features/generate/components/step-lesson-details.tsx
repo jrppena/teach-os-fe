@@ -11,9 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
@@ -23,7 +21,7 @@ import {
   useGradeLevels,
   useSubjects,
 } from "@/features/generate/api/use-curriculum"
-import type { Subject } from "@/features/generate/types"
+import { SubjectCombobox } from "@/features/generate/components/subject-combobox"
 
 export interface LessonDetailsData {
   lessonTitle: string
@@ -80,30 +78,6 @@ export function StepLessonDetails({ data, onChange, onNext }: StepLessonDetailsP
   const { data: subjects = [], isLoading: subjectsLoading } = useSubjects(
     selectedGrade?.code,
   )
-
-  // Separate core subjects from electives; group electives by track → cluster.
-  const coreSubjects = subjects.filter((s) => s.cluster === null)
-  const electroSubjects = subjects.filter((s) => s.cluster !== null)
-
-  // Build an ordered map: track → cluster-name → subjects.
-  // We preserve the cluster order_index ordering that the API already applies.
-  const clusterMap = new Map<string, { track: string; subjects: Subject[] }>()
-  for (const subject of electroSubjects) {
-    const clusterName = subject.cluster!.name
-    if (!clusterMap.has(clusterName)) {
-      clusterMap.set(clusterName, { track: subject.cluster!.track, subjects: [] })
-    }
-    clusterMap.get(clusterName)!.subjects.push(subject)
-  }
-
-  // Track-level groups in display order: Academic first, then TechPro.
-  const academicClusters = [...clusterMap.entries()].filter(
-    ([, v]) => v.track === "ACADEMIC",
-  )
-  const techProClusters = [...clusterMap.entries()].filter(
-    ([, v]) => v.track === "TECHPRO",
-  )
-  const hasClusters = clusterMap.size > 0
 
   // Changing the grade clears the chosen subject, since subjects differ per grade.
   const onGradeChange = (gradeName: string) =>
@@ -167,86 +141,24 @@ export function StepLessonDetails({ data, onChange, onNext }: StepLessonDetailsP
           </Select>
         </div>
 
-        {/* Subject */}
+        {/* Subject — searchable combobox (replaces plain Select; list can be very long for SHS) */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="learningArea">
             Subject <span className="text-destructive" aria-hidden="true">*</span>
           </Label>
-          <Select
+          <SubjectCombobox
+            subjects={subjects}
             value={data.learningArea}
             onValueChange={(v) => set("learningArea", v)}
             disabled={!selectedGrade || subjectsLoading}
-          >
-            <SelectTrigger id="learningArea" className="w-full" aria-required="true">
-              <SelectValue
-                placeholder={
-                  !selectedGrade
-                    ? "Select grade first"
-                    : subjectsLoading
-                      ? "Loading subjects…"
-                      : "Select subject"
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {hasClusters ? (
-                <>
-                  {/* Core subjects (no cluster) */}
-                  {coreSubjects.length > 0 && (
-                    <SelectGroup>
-                      <SelectLabel>Core Subjects</SelectLabel>
-                      {coreSubjects.map((s) => (
-                        <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
-                      ))}
-                    </SelectGroup>
-                  )}
-
-                  {/* Academic track clusters */}
-                  {academicClusters.length > 0 && (
-                    <SelectGroup>
-                      <SelectLabel>Academic Track</SelectLabel>
-                      {academicClusters.map(([clusterName, { subjects: clusterSubjects }]) => (
-                        <SelectGroup key={clusterName}>
-                          <SelectLabel className="pl-4 text-xs font-normal italic text-muted-foreground">
-                            {clusterName}
-                          </SelectLabel>
-                          {clusterSubjects.map((s) => (
-                            <SelectItem key={s.id} value={s.name} className="pl-6">
-                              {s.name}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      ))}
-                    </SelectGroup>
-                  )}
-
-                  {/* Technical-Professional track clusters */}
-                  {techProClusters.length > 0 && (
-                    <SelectGroup>
-                      <SelectLabel>Technical-Professional Track</SelectLabel>
-                      {techProClusters.map(([clusterName, { subjects: clusterSubjects }]) => (
-                        <SelectGroup key={clusterName}>
-                          <SelectLabel className="pl-4 text-xs font-normal italic text-muted-foreground">
-                            {clusterName}
-                          </SelectLabel>
-                          {clusterSubjects.map((s) => (
-                            <SelectItem key={s.id} value={s.name} className="pl-6">
-                              {s.name}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      ))}
-                    </SelectGroup>
-                  )}
-                </>
-              ) : (
-                /* K-10: flat subject list */
-                subjects.map((s) => (
-                  <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
+            placeholder={
+              !selectedGrade
+                ? "Select grade first"
+                : subjectsLoading
+                  ? "Loading subjects…"
+                  : "Select subject"
+            }
+          />
         </div>
 
         {/* Term */}
