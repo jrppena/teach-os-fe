@@ -9,6 +9,7 @@ import {
   FileText,
   LayoutDashboard,
   LogOut,
+  MessageSquare,
   Settings,
   User as UserIcon,
 } from "lucide-react"
@@ -144,6 +145,12 @@ export function DashboardNav() {
                 >
                   <Settings data-icon="inline-start" />
                   Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => navigate(paths.app.feedback.getHref())}
+                >
+                  <MessageSquare data-icon="inline-start" />
+                  Send feedback
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
