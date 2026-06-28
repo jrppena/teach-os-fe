@@ -5,7 +5,7 @@ import type { ActionFunction, LoaderFunction } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 
 import { paths } from '@/config/paths';
-import { ProtectedRoute, PublicRoute } from '@/lib/auth';
+import { ProtectedRoute, PublicRoute, RequireOnboarded } from '@/lib/auth';
 
 import {
   default as AppRoot,
@@ -68,7 +68,9 @@ export const createAppRouter = (queryClient: QueryClient) =>
       path: paths.app.root.path,
       element: (
         <ProtectedRoute>
-          <AppRoot />
+          <RequireOnboarded>
+            <AppRoot />
+          </RequireOnboarded>
         </ProtectedRoute>
       ),
       ErrorBoundary: AppRootErrorBoundary,
@@ -84,7 +86,9 @@ export const createAppRouter = (queryClient: QueryClient) =>
       path: paths.app.generate.path,
       element: (
         <ProtectedRoute>
-          <Outlet />
+          <RequireOnboarded>
+            <Outlet />
+          </RequireOnboarded>
         </ProtectedRoute>
       ),
       ErrorBoundary: AppRootErrorBoundary,
@@ -100,7 +104,9 @@ export const createAppRouter = (queryClient: QueryClient) =>
       path: paths.app.settings.path,
       element: (
         <ProtectedRoute>
-          <Outlet />
+          <RequireOnboarded>
+            <Outlet />
+          </RequireOnboarded>
         </ProtectedRoute>
       ),
       ErrorBoundary: AppRootErrorBoundary,
@@ -113,10 +119,48 @@ export const createAppRouter = (queryClient: QueryClient) =>
       ],
     },
     {
-      path: paths.app.planDetail.path,
+      path: paths.app.feedback.path,
+      element: (
+        <ProtectedRoute>
+          <RequireOnboarded>
+            <Outlet />
+          </RequireOnboarded>
+        </ProtectedRoute>
+      ),
+      ErrorBoundary: AppRootErrorBoundary,
+      children: [
+        {
+          index: true,
+          lazy: () =>
+            import('./routes/app/feedback').then(convert(queryClient)),
+        },
+      ],
+    },
+    {
+      // Guided first-time setup. Protected, but NOT wrapped in RequireOnboarded
+      // (that would redirect-loop). The page itself redirects completed users away.
+      path: paths.app.onboarding.path,
       element: (
         <ProtectedRoute>
           <Outlet />
+        </ProtectedRoute>
+      ),
+      ErrorBoundary: AppRootErrorBoundary,
+      children: [
+        {
+          index: true,
+          lazy: () =>
+            import('./routes/app/onboarding').then(convert(queryClient)),
+        },
+      ],
+    },
+    {
+      path: paths.app.planDetail.path,
+      element: (
+        <ProtectedRoute>
+          <RequireOnboarded>
+            <Outlet />
+          </RequireOnboarded>
         </ProtectedRoute>
       ),
       ErrorBoundary: AppRootErrorBoundary,

@@ -61,12 +61,37 @@ instantiates two separate mutation hooks (`exportDocx` / `exportPdf`) so each ha
 state. `StepResult` requires a `planId` prop (threaded from `generate.tsx` via the generate response
 `id`, and from `plan-detail.tsx` via `data.id`).
 The `User` type ([src/types/api.ts](src/types/api.ts)) now includes five school fields
-(`schoolName`, `region`, `division`, `district`, `schoolAddress`). The shared Axios error
+(`schoolName`, `region`, `division`, `district`, `schoolAddress`) and an `onboardingStep`
+(`OnboardingStep` union: `WELCOME`/`SCHOOL_INFO`/`PROVIDER_KEY`/`COMPLETED`). The shared Axios error
 interceptor now surfaces FastAPI's `detail` field (then `message`). The hooks
 ([src/features/settings/api/use-api-keys.ts](src/features/settings/api/use-api-keys.ts))
 use TanStack Query v5 (`useProviderKeys` / `useUpdateProviderKeys`) over the shared Axios
 client. No `localStorage` is used for keys. Registration has **no team concept**.
 Discussions/users/profile routes are intentionally not built yet.
+
+**Feedback + onboarding (live end-to-end):** Two protected features were added.
+(1) **Feedback** — a dedicated **`/feedback`** route ([src/app/routes/app/feedback.tsx](src/app/routes/app/feedback.tsx))
+renders `FeedbackForm` ([src/features/feedback/](src/features/feedback/components/feedback-form.tsx))
+with a category `Select`, an optional 1–5 star rating, and a required message; submits via
+`useSubmitFeedback` ([src/features/feedback/api/use-submit-feedback.ts](src/features/feedback/api/use-submit-feedback.ts))
+→ `POST /feedback`, showing a success toast and returning to the dashboard. Reached from a new
+**"Send feedback"** item in the DashboardNav user dropdown
+([src/components/layouts/dashboard-nav.tsx](src/components/layouts/dashboard-nav.tsx)).
+(2) **Onboarding** — a guided first-time **setup wizard** at **`/onboarding`**
+([src/app/routes/app/onboarding.tsx](src/app/routes/app/onboarding.tsx)) with three steps
+(welcome → school info → AI provider key), built in
+[src/features/onboarding/](src/features/onboarding/components/onboarding-wizard.tsx) and reusing the
+existing `useUpdateProfile` / `useProviderKeys` / `useUpdateProviderKeys` hooks for the data-entry
+steps. Progress is **resumable**: each forward transition persists the current step name via
+`useUpdateOnboardingStep` ([src/features/onboarding/api/use-update-onboarding-step.ts](src/features/onboarding/api/use-update-onboarding-step.ts))
+→ `PATCH /auth/onboarding`, written straight into the auth cache with `setQueryData(USER_QUERY_KEY, …)`.
+A new **`RequireOnboarded`** guard in [src/lib/auth.tsx](src/lib/auth.tsx) (used *inside* `ProtectedRoute`
+on dashboard/generate/settings/plan-detail/feedback in [src/app/router.tsx](src/app/router.tsx))
+redirects any user whose `onboardingStep !== 'COMPLETED'` to `/onboarding`; the `/onboarding` route
+itself is *not* wrapped (it would loop) and redirects already-completed users back to `/app`.
+The previously-unmounted Zustand toast `<Notifications/>` is now mounted once in
+[src/app/provider.tsx](src/app/provider.tsx), so success/error toasts (feedback, onboarding saves, and
+the Axios error interceptor) actually render.
 
 **Design system:** the app follows the **TeachOS Design System** — deep-blue primary,
 amber accent reserved for "needs attention"/placeholder UI only, 8px (`rounded-lg`)

@@ -43,5 +43,15 @@ export const paths = {
         path: '/settings',
         getHref: () => '/settings',
       },
+      // Send-feedback page (category + optional rating + message).
+      feedback: {
+        path: '/feedback',
+        getHref: () => '/feedback',
+      },
+      // Guided first-time setup wizard (welcome → school info → AI key).
+      onboarding: {
+        path: '/onboarding',
+        getHref: () => '/onboarding',
+      },
     },
   } as const;
