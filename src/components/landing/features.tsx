@@ -4,8 +4,8 @@ import {
   PenLine,
   Highlighter,
   Download,
-  History,
-  RefreshCw,
+  LayoutGrid,
+  KeyRound,
 } from "lucide-react"
 
 const features = [
@@ -19,7 +19,7 @@ const features = [
     icon: PenLine,
     title: "Editable, Section by Section",
     description:
-      "A rich text editor lets you revise objectives, learning procedures, assessment tasks, and every other section independently.",
+      "Toggle into edit mode to revise objectives, learning procedures, assessment tasks, and every other section inline before you export.",
   },
   {
     icon: Highlighter,
@@ -34,16 +34,16 @@ const features = [
       "Export school-ready documents in DOCX or PDF format, properly formatted and ready to submit or share.",
   },
   {
-    icon: History,
-    title: "Version History",
+    icon: LayoutGrid,
+    title: "Saved Plans Library",
     description:
-      "Every save creates a snapshot. Browse previous versions and restore any earlier draft with a single click — you never lose work.",
+      "Every plan you generate is saved to your dashboard. Reopen, review, or delete any lesson plan whenever you need it.",
   },
   {
-    icon: RefreshCw,
-    title: "Multiple AI Providers",
+    icon: KeyRound,
+    title: "Bring Your Own AI Keys",
     description:
-      "Reliable generation backed by automatic failover across multiple AI providers, so you always get a draft even when one service is unavailable.",
+      "Connect your own Grok or Gemini API key in Settings and generate plans on your preferred provider — you stay in control.",
   },
 ]
 
