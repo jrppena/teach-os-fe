@@ -13,6 +13,15 @@ export type BaseEntity = {
     totalPages: number;
   };
   
+  // Current step of the guided onboarding wizard. Mirrors the backend
+  // ``OnboardingStep`` StrEnum. A non-'COMPLETED' value redirects the user into
+  // the /onboarding flow (see RequireOnboarded in src/lib/auth.tsx).
+  export type OnboardingStep =
+    | 'WELCOME'
+    | 'SCHOOL_INFO'
+    | 'PROVIDER_KEY'
+    | 'COMPLETED';
+
   export type User = Entity<{
     firstName: string;
     lastName: string;
@@ -25,5 +34,7 @@ export type BaseEntity = {
     division: string;
     district: string;
     schoolAddress: string;
+    // Resumable onboarding progress, tracked on the backend ``user`` row.
+    onboardingStep: OnboardingStep;
   }>;
   

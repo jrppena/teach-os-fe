@@ -4,6 +4,7 @@ import * as React from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
 import { MainErrorFallback } from '../components/errors/main';
+import { Notifications } from '@/components/ui/notification';
 import { Spinner } from '@/components/ui/spinner/spinner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthLoader } from '@/lib/auth';
@@ -32,6 +33,10 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       <ErrorBoundary FallbackComponent={MainErrorFallback}>
           <QueryClientProvider client={queryClient}>
             {import.meta.env.DEV && <ReactQueryDevtools />}
+            {/* Global toast notifications (success/error). Mounted once here so
+                the notifications store renders app-wide, including the Axios
+                error interceptor and feedback/onboarding confirmations. */}
+            <Notifications />
             <AuthLoader
               renderLoading={() => (
                 <div className="flex h-screen w-screen items-center justify-center">

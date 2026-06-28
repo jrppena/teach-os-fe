@@ -178,6 +178,26 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 /**
+ * Renders children only when the authenticated user has completed onboarding.
+ * A user whose `onboardingStep` is not 'COMPLETED' is redirected to the guided
+ * setup wizard at `/onboarding`. Returns null while the auth check is in-flight.
+ *
+ * Use this INSIDE `ProtectedRoute` (which guarantees an authenticated user) on
+ * the main app routes — never on `/onboarding` itself, or it would redirect-loop.
+ */
+export const RequireOnboarded = ({ children }: { children: React.ReactNode }) => {
+  const user = useUser();
+
+  if (user.isLoading) return null;
+
+  if (user.data && user.data.onboardingStep !== 'COMPLETED') {
+    return <Navigate to={paths.app.onboarding.getHref()} replace />;
+  }
+
+  return children;
+};
+
+/**
  * Renders children only when the user is NOT authenticated (public pages).
  * Redirects already-logged-in users to the app dashboard, honoring any
  * `redirectTo` query param that may have been set by ProtectedRoute.
